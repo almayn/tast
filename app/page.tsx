@@ -1,101 +1,189 @@
-import Image from "next/image";
+'use client';
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [question, setQuestion] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [name, setName] = useState('');
+  const [city, setCity] = useState('');
+  const [subscriptionNumber, setSubscriptionNumber] = useState(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [showThankYouMessage, setShowThankYouMessage] = useState(false); // حالة جديدة للرسالة
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  useEffect(() => {
+    const fetchQuestion = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('questions')
+          .select('*')
+          .eq('is_published', true)
+          .lte('publish_date', new Date().toISOString())
+          .gte('close_date', new Date().toISOString());
+        if (error) {
+          throw error;
+        }
+        if (data && data.length > 0) {
+          setQuestion(data[0]);
+        } else {
+          setError('لا يوجد سؤال متاح حالياً.');
+        }
+      } catch (err) {
+        setError('حدث خطأ أثناء جلب السؤال.');
+        console.error('Error details:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchQuestion();
+  }, []);
+
+  const handleAnswer = (answer) => {
+    setSelectedAnswer(answer);
+    setErrorMessage('');
+  };
+
+  const handleSubmit = async () => {
+    if (!name || !city || !selectedAnswer) {
+      setErrorMessage('يرجى ملء جميع الحقول واختيار إجابة.');
+      return;
+    }
+    try {
+      const number = Math.floor(1000 + Math.random() * 9000);
+      const { error } = await supabase.from('participants').insert([
+        {
+          name,
+          city,
+          answer: selectedAnswer,
+          subscription_number: number,
+        },
+      ]);
+      if (error) {
+        throw error;
+      }
+      setSubscriptionNumber(number);
+      setIsSubmitted(true);
+    } catch (err) {
+      console.error('Error submitting data:', err);
+      alert('حدث خطأ أثناء تسجيل البيانات.');
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg text-center">
+      {/* رأس أزرق بنفس لون الفورم */}
+      <div className="bg-blue-600 text-white py-3 rounded-t-lg">
+        <h1 className="text-3xl font-bold" style={{ fontFamily: 'Arial, sans-serif' }}>
+          مسابقة الماس الرمضانية
+        </h1>
+      </div>
+      {loading && (
+        <p className="text-lg font-semibold text-gray-700">جارٍ تحميل السؤال...</p>
+      )}
+      {error && (
+        <p className="text-lg font-semibold text-red-500">{error}</p>
+      )}
+      {isSubmitted && (
+        <>
+          <div className="mt-4">
+            <img
+              src="/images/talal.jpg"
+              alt="الشيخ طلال عواده الحبيشي"
+              className="w-32 h-32 mx-auto rounded-full border-4 border-blue-600"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </div>
+          <p className="text-lg text-gray-800 mt-2 mb-4" style={{ fontFamily: 'Arial, sans-serif' }}>
+            الداعم الرئيسي: <br />
+            <span className="text-xl font-bold text-gray-900 relative inline-block">
+              الشيخ طلال عواده الحبيشي
+              <span className="absolute bottom-0 left-0 w-full h-1 bg-yellow-400 rounded-md"></span>
+            </span>
+          </p>
+          <h2 className="text-2xl text-green-600 mt-4 mb-2" style={{ fontFamily: 'Arial, sans-serif' }}>
+            رقم المشاركة هو
+          </h2>
+          <p className="text-3xl text-gray-800 mb-4 font-bold" style={{ fontFamily: 'Arial, sans-serif' }}>
+            {subscriptionNumber}
+          </p>
+          {!showThankYouMessage ? (
+            <button
+              className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(subscriptionNumber.toString());
+                  alert('تم نسخ الرقم بنجاح!');
+                  setShowThankYouMessage(true);
+                } catch (err) {
+                  alert('لم يتم النسخ. يرجى المحاولة مرة أخرى.');
+                }
+              }}
+              
+              
+            >
+              نسخ الرقم
+            </button>
+          ) : (
+            <p className="text-green-600 font-bold text-lg">
+              شكرا لمشاركتك.. تابع الماس لمعرفة النتيجة
+            </p>
+          )}
+        </>
+      )}
+      {!isSubmitted && question && (
+        <>
+          <h2
+            className="text-2xl text-blue-800 mb-6 font-bold"
+            style={{ fontFamily: 'Arial, sans-serif', lineHeight: '1.5' }}
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            {question.question}
+          </h2>
+          <div className="space-y-4">
+            {[question.option1, question.option2].map((option, index) => (
+              <button
+                key={index}
+                className={`w-full py-3 px-6 font-semibold rounded transition ${
+                  selectedAnswer === option
+                    ? question.correct_option === option
+                      ? 'bg-green-500 text-white'
+                      : 'bg-red-500 text-white'
+                    : 'bg-gray-500 text-white hover:bg-gray-600'
+                }`}
+                onClick={() => handleAnswer(option)}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+          <div className="mt-6 space-y-4">
+            <input
+              type="text"
+              placeholder="اسمك"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full py-2 px-4 border border-gray-300 rounded"
+              style={{ fontFamily: 'Arial, sans-serif' }}
+            />
+            <input
+              type="text"
+              placeholder="مدينتك"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="w-full py-2 px-4 border border-gray-300 rounded"
+              style={{ fontFamily: 'Arial, sans-serif' }}
+            />
+          </div>
+          {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+          <button
+            className="w-full py-3 px-6 bg-blue-500 text-white rounded mt-6 hover:bg-blue-600 transition"
+            onClick={handleSubmit}
+          >
+            شارك
+          </button>
+        </>
+      )}
     </div>
   );
 }
