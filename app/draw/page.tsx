@@ -119,23 +119,24 @@ export default function Draw() {
     <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg text-center">
       <h1 className="text-2xl font-bold text-blue-600 mb-6">سحب الفائز</h1>
       <div className="mb-6 w-48 h-48 mx-auto">
-        <CircularProgressbar
-          value={progress * 100}
-          text={
-            winner
-              ? `${winner}`
-              : !started
-              ? '⏳'
-              : `${Math.ceil(countdown)}`
-          }
-          styles={buildStyles({
-            textColor: winner ? '#15803d' : '#3b82f6',
-            pathColor: '#3b82f6',
-            trailColor: '#e2e8f0',
-            textSize: '30px',
-            fontWeight: 'bold',
-          })}
-        />
+      <CircularProgressbar
+  value={progress * 100}
+  text={
+    winner
+      ? `${winner}`
+      : !started
+      ? '⏳'
+      : `${Math.ceil(countdown)}`
+  }
+  styles={buildStyles({
+    textColor: winner ? '#15803d' : '#3b82f6',
+    pathColor: '#3b82f6',
+    trailColor: '#e2e8f0',
+    textSize: '30px',
+  })}
+  className="text-bold"
+/>
+
       </div>
 
       {showCongrats && (
