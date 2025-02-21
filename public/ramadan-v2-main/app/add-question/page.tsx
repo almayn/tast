@@ -15,7 +15,8 @@ export default function AddQuestion() {
   const [errorMessage, setErrorMessage] = useState('');
 
   // دالة لإضافة السؤال
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+
     e.preventDefault();
     setLoading(true);
     setErrorMessage('');
