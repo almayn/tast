@@ -33,7 +33,6 @@ export default function Home() {
         }
       } catch (err) {
         setError('حدث خطأ أثناء جلب السؤال.');
-        console.error('Error details:', err);
       } finally {
         setLoading(false);
       }
@@ -123,6 +122,14 @@ export default function Home() {
               
             
             >
+             
+             
+             
+             
+             
+             
+             
+             
               نسخ الرقم
             </button>
           ) : (
