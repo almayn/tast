@@ -1,6 +1,6 @@
-// app/draw/page.tsx
 'use client';
-import { useState } from 'react'; // إزالة useEffect إذا لم يكن مستخدمًا
+
+import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
@@ -12,9 +12,6 @@ export default function Draw() {
   const [countdown, setCountdown] = useState(6);
   const [showCongrats, setShowCongrats] = useState(false);
   const [started, setStarted] = useState(false);
-
-  // باقي الكود...
-
 
   // الأصوات
   const playTimerWarning = () => {

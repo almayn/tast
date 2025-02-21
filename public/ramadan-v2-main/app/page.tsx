@@ -1,4 +1,3 @@
-// app/page.tsx
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
@@ -16,7 +15,6 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState('');
   const [showThankYouMessage, setShowThankYouMessage] = useState(false); // حالة جديدة للرسالة
 
-  // جلب السؤال عند تحميل الصفحة
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
@@ -43,21 +41,18 @@ export default function Home() {
     fetchQuestion();
   }, []);
 
-  // اختيار الإجابة
   const handleAnswer = (answer) => {
     setSelectedAnswer(answer);
     setErrorMessage('');
   };
 
-  // إرسال البيانات إلى Supabase
   const handleSubmit = async () => {
     if (!name || !city || !selectedAnswer) {
       setErrorMessage('يرجى ملء جميع الحقول واختيار إجابة.');
       return;
     }
-
     try {
-      const number = Math.floor(1000 + Math.random() * 9000); // توليد رقم اشتراك عشوائي
+      const number = Math.floor(1000 + Math.random() * 9000);
       const { error } = await supabase.from('participants').insert([
         {
           name,
@@ -66,15 +61,13 @@ export default function Home() {
           subscription_number: number,
         },
       ]);
-
       if (error) {
         throw error;
       }
-
       setSubscriptionNumber(number);
       setIsSubmitted(true);
     } catch (err) {
-      console.error('Error submitting data:', err.message || JSON.stringify(err));
+      console.error('Error submitting data:', err);
       alert('حدث خطأ أثناء تسجيل البيانات.');
     }
   };
@@ -87,28 +80,23 @@ export default function Home() {
           مسابقة الماس الرمضانية
         </h1>
       </div>
-
-      {/* حالة التحميل */}
       {loading && (
         <p className="text-lg font-semibold text-gray-700">جارٍ تحميل السؤال...</p>
       )}
-
-      {/* رسالة الخطأ */}
       {error && (
         <p className="text-lg font-semibold text-red-500">{error}</p>
       )}
-
-      {/* حالة بعد الإرسال */}
       {isSubmitted && (
         <>
           <div className="mt-4">
-            <Image
-              src="/images/talal.jpg"
-              alt="الشيخ طلال عواده الحبيشي"
-              width={128}
-              height={128}
-              className="w-32 h-32 mx-auto rounded-full border-4 border-blue-600"
-            />
+<Image 
+  src="/images/talal.jpg"
+  alt="الشيخ طلال عواده الحبيشي"
+  width={128} 
+  height={128} 
+  className="w-32 h-32 mx-auto rounded-full border-4 border-blue-600"
+/>
+  
           </div>
           <p className="text-lg text-gray-800 mt-2 mb-4" style={{ fontFamily: 'Arial, sans-serif' }}>
             الداعم الرئيسي: <br />
@@ -129,23 +117,32 @@ export default function Home() {
               onClick={async () => {
                 try {
                   await navigator.clipboard.writeText(subscriptionNumber.toString());
-                  setShowThankYouMessage(true); // عرض رسالة الشكر
+                  alert('تم نسخ الرقم بنجاح!');
+                  setShowThankYouMessage(true);
                 } catch (err) {
-                  console.error('خطأ في النسخ:', err.message || JSON.stringify(err));
+                  alert('لم يتم النسخ. يرجى المحاولة مرة أخرى.');
                 }
               }}
+              
+            
             >
+             
+             
+             
+             
+             
+             
+             
+             
               نسخ الرقم
             </button>
           ) : (
             <p className="text-green-600 font-bold text-lg">
-              شكراً لمشاركتك.. تابع الماس لمعرفة النتيجة
+              شكرا لمشاركتك.. تابع الماس لمعرفة النتيجة
             </p>
           )}
         </>
       )}
-
-      {/* حالة قبل الإرسال */}
       {!isSubmitted && question && (
         <>
           <h2
