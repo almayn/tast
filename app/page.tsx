@@ -34,8 +34,7 @@ export default function Home() {
         } else {
           setError('لا يوجد سؤال متاح حالياً.');
         }
-      } catch (err) {
-        setError('حدث خطأ أثناء جلب السؤال.');
+      
       } finally {
         setLoading(false);
       }
