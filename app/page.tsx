@@ -8,7 +8,7 @@ export default function Home() {
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [city, setCity] = useState('');
   const [subscriptionNumber, setSubscriptionNumber] = useState(null);
