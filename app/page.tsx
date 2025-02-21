@@ -11,7 +11,7 @@ export default function Home() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [city, setCity] = useState('');
-  const [subscriptionNumber, setSubscriptionNumber] = useState(null);
+  const [subscriptionNumber, setSubscriptionNumber] = useState<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [showThankYouMessage, setShowThankYouMessage] = useState(false); // حالة جديدة للرسالة
