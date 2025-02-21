@@ -140,10 +140,14 @@ export default function Home() {
                   try {
                     await navigator.clipboard.writeText(subscriptionNumber.toString());
                     setShowThankYouMessage(true); 
-                  } catch (err) {
-                    console.error('خطأ في النسخ:', err.message || JSON.stringify(err));
-                  }
-                }
+                    catch (err) {
+                      if (err instanceof Error) {
+                        console.error('خطأ في النسخ:', err.message);
+                      } else {
+                        console.error('خطأ في النسخ:', JSON.stringify(err));
+                      }
+                    }
+                    
               }}
               
               
