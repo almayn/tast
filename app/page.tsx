@@ -27,21 +27,29 @@ export default function Home() {
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
+        const currentDate = new Date().toISOString(); // الحصول على الوقت الحالي بتنسيق ISO
+        console.log('Current Date:', currentDate); // تسجيل التاريخ الحالي
+
         const { data, error } = await supabase
           .from('questions')
           .select('*')
-          .eq('is_published', true)
-          .lte('publish_date', new Date().toISOString())
-          .gte('close_date', new Date().toISOString());
+          .lte('publish_date', currentDate) // الأسئلة التي تاريخ نشرها أقل من أو يساوي الوقت الحالي
+          .gte('close_date', currentDate); // الأسئلة التي تاريخ إغلاقها أكبر من أو يساوي الوقت الحالي
 
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase Error Details:', JSON.stringify(error, null, 2));
+          throw error;
+        }
+
+        console.log('Fetched Data:', data); // تسجيل البيانات المسترجعة
         if (data && data.length > 0) {
-          setQuestion(data[0]);
+          setQuestion(data[0]); // تحديد السؤال الأول المطابق للشروط
         } else {
           setError('لا يوجد سؤال متاح حالياً.');
         }
       } catch (err) {
-        console.error('Error fetching question:', err);
+        console.error('Error fetching question:', JSON.stringify(err, null, 2));
+        setError('حدث خطأ أثناء جلب السؤال.');
       } finally {
         setLoading(false);
       }
@@ -74,12 +82,16 @@ export default function Home() {
         },
       ]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase Insert Error Details:', JSON.stringify(error, null, 2));
+        throw error;
+      }
 
       setSubscriptionNumber(number);
       setIsSubmitted(true);
     } catch (err) {
-      console.error('Error submitting data:', err);
+      console.error('Error submitting data:', JSON.stringify(err, null, 2));
+      setErrorMessage('حدث خطأ أثناء إرسال البيانات.');
     }
   };
 

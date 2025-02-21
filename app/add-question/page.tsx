@@ -20,19 +20,16 @@ export default function AddQuestion() {
     setLoading(true);
     setErrorMessage('');
     setSuccessMessage('');
-
     try {
       // التحقق من صحة البيانات
       if (!question || !option1 || !option2 || !correctOption || !publishDate || !closeDate) {
         setErrorMessage('يرجى ملء جميع الحقول.');
         return;
       }
-
       if (correctOption !== option1 && correctOption !== option2) {
         setErrorMessage('الإجابة الصحيحة يجب أن تكون واحدة من الخيارين.');
         return;
       }
-
       if (new Date(closeDate) <= new Date(publishDate)) {
         setErrorMessage('تاريخ الإغلاق يجب أن يكون بعد تاريخ النشر.');
         return;
@@ -45,7 +42,6 @@ export default function AddQuestion() {
           option1,
           option2,
           correct_option: correctOption,
-          is_published: false,
           publish_date: publishDate,
           close_date: closeDate,
         },
@@ -70,7 +66,6 @@ export default function AddQuestion() {
       } else {
         console.error('Error adding question:', JSON.stringify(err));
       }
-    
     } finally {
       setLoading(false);
     }
@@ -79,7 +74,6 @@ export default function AddQuestion() {
   return (
     <div className="max-w-md mx-auto mt-10 p-4 bg-white shadow-lg rounded-lg text-center">
       <h1 className="text-xl font-bold text-blue-600 mb-4">إضافة سؤال جديد</h1>
-
       {/* استمارة إضافة السؤال */}
       <form onSubmit={handleSubmit} className="space-y-3">
         {/* حقل السؤال */}
@@ -156,7 +150,7 @@ export default function AddQuestion() {
           <input
             type="datetime-local"
             value={publishDate}
-            onInput={(e) => setPublishDate((e.target as HTMLInputElement).value)} // استخدام onInput بدلاً من onChange
+            onInput={(e) => setPublishDate((e.target as HTMLInputElement).value)}
             className="w-full py-2 px-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
             required
           />
@@ -168,7 +162,7 @@ export default function AddQuestion() {
           <input
             type="datetime-local"
             value={closeDate}
-            onInput={(e) => setCloseDate((e.target as HTMLInputElement).value)} // استخدام onInput بدلاً من onChange
+            onInput={(e) => setCloseDate((e.target as HTMLInputElement).value)}
             className="w-full py-2 px-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
             required
           />
