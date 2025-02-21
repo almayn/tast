@@ -136,13 +136,16 @@ export default function Home() {
             <button
               className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
               onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(subscriptionNumber.toString());
-                  setShowThankYouMessage(true); // استخدام setShowThankYouMessage هنا
-                } catch (err) {
-                  console.error('خطأ في النسخ:', err.message || JSON.stringify(err));
+                if (subscriptionNumber !== null) {
+                  try {
+                    await navigator.clipboard.writeText(subscriptionNumber.toString());
+                    setShowThankYouMessage(true); 
+                  } catch (err) {
+                    console.error('خطأ في النسخ:', err.message || JSON.stringify(err));
+                  }
                 }
               }}
+              
               
               
             >
