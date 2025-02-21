@@ -54,7 +54,7 @@ export default function Home() {
       setErrorMessage('يرجى ملء جميع الحقول واختيار إجابة.');
       return;
     }
-
+  
     try {
       const number = Math.floor(1000 + Math.random() * 9000); // توليد رقم اشتراك عشوائي
       const { error } = await supabase.from('participants').insert([
@@ -65,33 +65,23 @@ export default function Home() {
           subscription_number: number,
         },
       ]);
-
+  
       if (error) {
         throw error;
       }
-
+  
       setSubscriptionNumber(number);
       setIsSubmitted(true);
+  
     } catch (err) {
       if (err instanceof Error) {
         console.error('Error adding question:', err.message);
-      } catch (err) {
-        if (err instanceof Error) {
-          console.error('Error adding question:', err.message);
-        } catch (err) {
-          if (err instanceof Error) {
-            console.error('Error adding question:', err.message);
-          } else {
-            console.error('Error adding question:', JSON.stringify(err));
-          }
-        
-        }
-      
+      } else {
+        console.error('Error adding question:', JSON.stringify(err));
       }
-    
     }
   };
-
+  
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg text-center">
       {/* رأس أزرق بنفس لون الفورم */}
