@@ -11,7 +11,7 @@ export default function Home() {
     option2: string;
     correct_option: string;
   }
-
+  const [showThankYouMessage, setShowThankYouMessage] = useState(false);
   const [question, setQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
