@@ -43,7 +43,7 @@ export default function Home() {
   }, []);
 
   // اختيار الإجابة
-  const handleAnswer = (answer) => {
+  const handleAnswer = (answer: string) => {
     setSelectedAnswer(answer);
     setErrorMessage('');
   };
