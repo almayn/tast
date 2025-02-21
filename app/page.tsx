@@ -21,7 +21,6 @@ export default function Home() {
   const [subscriptionNumber, setSubscriptionNumber] = useState<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [showThankYouMessage, setShowThankYouMessage] = useState(false); // حالة جديدة للرسالة
 
   // جلب السؤال عند تحميل الصفحة
   useEffect(() => {
