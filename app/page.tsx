@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import Image from 'next/image';
 
 export default function Home() {
   const [question, setQuestion] = useState(null);
@@ -88,11 +89,14 @@ export default function Home() {
       {isSubmitted && (
         <>
           <div className="mt-4">
-            <img
-              src="/images/talal.jpg"
-              alt="الشيخ طلال عواده الحبيشي"
-              className="w-32 h-32 mx-auto rounded-full border-4 border-blue-600"
-            />
+<Image 
+  src="/images/talal.jpg"
+  alt="الشيخ طلال عواده الحبيشي"
+  width={128} 
+  height={128} 
+  className="w-32 h-32 mx-auto rounded-full border-4 border-blue-600"
+/>
+  
           </div>
           <p className="text-lg text-gray-800 mt-2 mb-4" style={{ fontFamily: 'Arial, sans-serif' }}>
             الداعم الرئيسي: <br />
