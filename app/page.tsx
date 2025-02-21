@@ -5,7 +5,14 @@ import { supabase } from '../lib/supabaseClient';
 import Image from 'next/image';
 
 export default function Home() {
-  const [question, setQuestion] = useState(null);
+  interface Question {
+    question: string;
+    option1: string;
+    option2: string;
+    correct_option: string;
+  }
+
+  const [question, setQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -130,13 +137,9 @@ export default function Home() {
             <button
               className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
               onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(subscriptionNumber.toString());
-                  setShowThankYouMessage(true); // عرض رسالة الشكر
-                } catch (err) {
-                  console.error('خطأ في النسخ:', err.message || JSON.stringify(err));
-                }
+                await navigator.clipboard.writeText(subscriptionNumber?.toString() || '');
               }}
+              
             >
               نسخ الرقم
             </button>
