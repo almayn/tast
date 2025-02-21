@@ -73,8 +73,22 @@ export default function Home() {
       setSubscriptionNumber(number);
       setIsSubmitted(true);
     } catch (err) {
-      console.error('Error submitting data:', err.message || JSON.stringify(err));
-      alert('حدث خطأ أثناء تسجيل البيانات.');
+      if (err instanceof Error) {
+        console.error('Error adding question:', err.message);
+      } catch (err) {
+        if (err instanceof Error) {
+          console.error('Error adding question:', err.message);
+        } catch (err) {
+          if (err instanceof Error) {
+            console.error('Error adding question:', err.message);
+          } else {
+            console.error('Error adding question:', JSON.stringify(err));
+          }
+        
+        }
+      
+      }
+    
     }
   };
 

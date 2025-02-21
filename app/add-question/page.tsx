@@ -65,8 +65,12 @@ export default function AddQuestion() {
       setPublishDate('');
       setCloseDate('');
     } catch (err) {
-      console.error('Error adding question:', err.message || JSON.stringify(err));
-      setErrorMessage('حدث خطأ أثناء إضافة السؤال.');
+      if (err instanceof Error) {
+        console.error('Error adding question:', err.message);
+      } else {
+        console.error('Error adding question:', JSON.stringify(err));
+      }
+    
     } finally {
       setLoading(false);
     }
