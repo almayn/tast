@@ -11,6 +11,7 @@ export default function Home() {
     option2: string;
     correct_option: string;
   }
+
   const [showThankYouMessage, setShowThankYouMessage] = useState(false);
   const [question, setQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,19 +33,20 @@ export default function Home() {
           .eq('is_published', true)
           .lte('publish_date', new Date().toISOString())
           .gte('close_date', new Date().toISOString());
-        if (error) {
-          throw error;
-        }
+
+        if (error) throw error;
         if (data && data.length > 0) {
           setQuestion(data[0]);
         } else {
           setError('لا يوجد سؤال متاح حالياً.');
         }
-      
+      } catch (err) {
+        console.error('Error fetching question:', err);
       } finally {
         setLoading(false);
       }
     };
+
     fetchQuestion();
   }, []);
 
@@ -60,9 +62,9 @@ export default function Home() {
       setErrorMessage('يرجى ملء جميع الحقول واختيار إجابة.');
       return;
     }
-  
+
     try {
-      const number = Math.floor(1000 + Math.random() * 9000); // توليد رقم اشتراك عشوائي
+      const number = Math.floor(1000 + Math.random() * 9000);
       const { error } = await supabase.from('participants').insert([
         {
           name,
@@ -71,44 +73,28 @@ export default function Home() {
           subscription_number: number,
         },
       ]);
-  
-      if (error) {
-        throw error;
-      }
-  
+
+      if (error) throw error;
+
       setSubscriptionNumber(number);
       setIsSubmitted(true);
-  
     } catch (err) {
-      if (err instanceof Error) {
-        console.error('Error adding question:', err.message);
-      } else {
-        console.error('Error adding question:', JSON.stringify(err));
-      }
+      console.error('Error submitting data:', err);
     }
   };
-  
+
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg text-center">
-      {/* رأس أزرق بنفس لون الفورم */}
       <div className="bg-blue-600 text-white py-3 rounded-t-lg">
         <h1 className="text-3xl font-bold" style={{ fontFamily: 'Arial, sans-serif' }}>
           مسابقة الماس الرمضانية
         </h1>
       </div>
 
-      {/* حالة التحميل */}
-      {loading && (
-        <p className="text-lg font-semibold text-gray-700">جارٍ تحميل السؤال...</p>
-      )}
+      {loading && <p className="text-lg font-semibold text-gray-700">جارٍ تحميل السؤال...</p>}
+      {error && <p className="text-lg font-semibold text-red-500">{error}</p>}
 
-      {/* رسالة الخطأ */}
-      {error && (
-        <p className="text-lg font-semibold text-red-500">{error}</p>
-      )}
-
-      {/* حالة بعد الإرسال */}
-      {isSubmitted && (
+      {isSubmitted ? (
         <>
           <div className="mt-4">
             <Image
@@ -119,19 +105,15 @@ export default function Home() {
               className="w-32 h-32 mx-auto rounded-full border-4 border-blue-600"
             />
           </div>
-          <p className="text-lg text-gray-800 mt-2 mb-4" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <p className="text-lg text-gray-800 mt-2 mb-4">
             الداعم الرئيسي: <br />
             <span className="text-xl font-bold text-gray-900 relative inline-block">
               الشيخ طلال عواده الحبيشي
               <span className="absolute bottom-0 left-0 w-full h-1 bg-yellow-400 rounded-md"></span>
             </span>
           </p>
-          <h2 className="text-2xl text-green-600 mt-4 mb-2" style={{ fontFamily: 'Arial, sans-serif' }}>
-            رقم المشاركة هو
-          </h2>
-          <p className="text-3xl text-gray-800 mb-4 font-bold" style={{ fontFamily: 'Arial, sans-serif' }}>
-            {subscriptionNumber}
-          </p>
+          <h2 className="text-2xl text-green-600 mt-4 mb-2">رقم المشاركة هو</h2>
+          <p className="text-3xl text-gray-800 mb-4 font-bold">{subscriptionNumber}</p>
           {!showThankYouMessage ? (
             <button
               className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
@@ -139,19 +121,16 @@ export default function Home() {
                 if (subscriptionNumber !== null) {
                   try {
                     await navigator.clipboard.writeText(subscriptionNumber.toString());
-                    setShowThankYouMessage(true); 
-                    catch (err) {
-                      if (err instanceof Error) {
-                        console.error('خطأ في النسخ:', err.message);
-                      } else {
-                        console.error('خطأ في النسخ:', JSON.stringify(err));
-                      }
+                    setShowThankYouMessage(true);
+                  } catch (err) {
+                    if (err instanceof Error) {
+                      console.error('خطأ في النسخ:', err.message);
+                    } else {
+                      console.error('خطأ في النسخ:', JSON.stringify(err));
                     }
-                    
+                  }
+                }
               }}
-              
-              
-              
             >
               نسخ الرقم
             </button>
@@ -161,60 +140,54 @@ export default function Home() {
             </p>
           )}
         </>
-      )}
-
-      {/* حالة قبل الإرسال */}
-      {!isSubmitted && question && (
-        <>
-          <h2
-            className="text-2xl text-blue-800 mb-6 font-bold"
-            style={{ fontFamily: 'Arial, sans-serif', lineHeight: '1.5' }}
-          >
-            {question.question}
-          </h2>
-          <div className="space-y-4">
-            {[question.option1, question.option2].map((option, index) => (
-              <button
-                key={index}
-                className={`w-full py-3 px-6 font-semibold rounded transition ${
-                  selectedAnswer === option
-                    ? question.correct_option === option
-                      ? 'bg-green-500 text-white'
-                      : 'bg-red-500 text-white'
-                    : 'bg-gray-500 text-white hover:bg-gray-600'
-                }`}
-                onClick={() => handleAnswer(option)}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-          <div className="mt-6 space-y-4">
-            <input
-              type="text"
-              placeholder="اسمك"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full py-2 px-4 border border-gray-300 rounded"
-              style={{ fontFamily: 'Arial, sans-serif' }}
-            />
-            <input
-              type="text"
-              placeholder="مدينتك"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className="w-full py-2 px-4 border border-gray-300 rounded"
-              style={{ fontFamily: 'Arial, sans-serif' }}
-            />
-          </div>
-          {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-          <button
-            className="w-full py-3 px-6 bg-blue-500 text-white rounded mt-6 hover:bg-blue-600 transition"
-            onClick={handleSubmit}
-          >
-            شارك
-          </button>
-        </>
+      ) : (
+        question && (
+          <>
+            <h2 className="text-2xl text-blue-800 mb-6 font-bold">
+              {question.question}
+            </h2>
+            <div className="space-y-4">
+              {[question.option1, question.option2].map((option, index) => (
+                <button
+                  key={index}
+                  className={`w-full py-3 px-6 font-semibold rounded transition ${
+                    selectedAnswer === option
+                      ? question.correct_option === option
+                        ? 'bg-green-500 text-white'
+                        : 'bg-red-500 text-white'
+                      : 'bg-gray-500 text-white hover:bg-gray-600'
+                  }`}
+                  onClick={() => handleAnswer(option)}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+            <div className="mt-6 space-y-4">
+              <input
+                type="text"
+                placeholder="اسمك"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full py-2 px-4 border border-gray-300 rounded"
+              />
+              <input
+                type="text"
+                placeholder="مدينتك"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="w-full py-2 px-4 border border-gray-300 rounded"
+              />
+            </div>
+            {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+            <button
+              className="w-full py-3 px-6 bg-blue-500 text-white rounded mt-6 hover:bg-blue-600 transition"
+              onClick={handleSubmit}
+            >
+              شارك
+            </button>
+          </>
+        )
       )}
     </div>
   );
