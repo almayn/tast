@@ -6,6 +6,7 @@ import Image from 'next/image';
 
 export default function Home() {
   interface Question {
+    id: number; // إضافة حقل id لتحديد رقم السؤال
     question: string;
     option1: string;
     option2: string;
@@ -98,6 +99,19 @@ export default function Home() {
     }
   };
 
+  // الحصول على التاريخ الميلادي واسم اليوم
+  const getFormattedDate = () => {
+    const today = new Date();
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+    };
+    const formattedDate = today.toLocaleDateString('ar-SA', options);
+    return formattedDate.replace(/،/g, ''); // إزالة الفاصلة العربية إذا كانت موجودة
+  };
+
   return (
     <div dir="rtl" className="max-w-md mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg text-center">
       {/* رأس النموذج مع الشعار */}
@@ -106,12 +120,12 @@ export default function Home() {
           مسابقة الماس الرمضانية
         </h1>
         <Image
-  src="/images/logoo.png"
-  alt="شعار المسابقة"
-  width={80}
-  height={40}
-  className="rounded-md w-auto h-auto" // الحفاظ على نسبة العرض إلى الارتفاع
-/>
+          src="/images/logoo.png"
+          alt="شعار المسابقة"
+          width={80}
+          height={40}
+          className="rounded-md w-auto h-auto" // الحفاظ على نسبة العرض إلى الارتفاع
+        />
       </div>
 
       {/* حالة التحميل والخطأ */}
@@ -168,6 +182,15 @@ export default function Home() {
       ) : (
         question && (
           <>
+            {/* معلومات السؤال */}
+            <div
+              className="mb-6 text-center p-4 bg-blue-100 rounded-lg"
+              style={{ fontSize: '1.2rem' }}
+            >
+              <strong style={{ fontSize: '1.5rem', color: '#007bff' }}>{question.id}</strong>{' '}
+              {getFormattedDate()}
+            </div>
+
             {/* السؤال */}
             <h2 className="text-2xl text-blue-800 my-6 font-bold">{question.question}</h2>
 
