@@ -14,18 +14,20 @@ export default function AddQuestion() {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
+
   // دالة لإضافة السؤال
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage('');
     setSuccessMessage('');
     try {
-      // التحقق من صحة البيانات
-      if (!question || !option1 || !option2 || !correctOption || !publishDate || !closeDate) {
+      if (!question || !option1 || !option2 || !correctOption || !closeDate) {
         setErrorMessage('يرجى ملء جميع الحقول.');
         return;
       }
+      
       if (correctOption !== option1 && correctOption !== option2) {
         setErrorMessage('الإجابة الصحيحة يجب أن تكون واحدة من الخيارين.');
         return;
@@ -34,25 +36,21 @@ export default function AddQuestion() {
         setErrorMessage('تاريخ الإغلاق يجب أن يكون بعد تاريخ النشر.');
         return;
       }
-
-      // إدراج السؤال في الجدول questions
+  
       const { error } = await supabase.from('questions').insert([
         {
           question,
           option1,
           option2,
           correct_option: correctOption,
-          publish_date: publishDate,
           close_date: closeDate,
         },
       ]);
-
+  
       if (error) {
-        console.error('Supabase Insert Error Details:', error.message || JSON.stringify(error));
-        throw new Error(`حدث خطأ أثناء إضافة السؤال. التفاصيل: ${error.message || JSON.stringify(error)}`);
+        throw new Error(`حدث خطأ أثناء إضافة السؤال. التفاصيل: ${error.message}`);
       }
-
-      // عرض رسالة نجاح
+  
       setSuccessMessage('تمت إضافة السؤال بنجاح!');
       setQuestion('');
       setOption1('');
@@ -61,15 +59,12 @@ export default function AddQuestion() {
       setPublishDate('');
       setCloseDate('');
     } catch (err) {
-      if (err instanceof Error) {
-        console.error('Error adding question:', err.message);
-      } else {
-        console.error('Error adding question:', JSON.stringify(err));
-      }
+      console.error('Error adding question:', err);
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="max-w-md mx-auto mt-10 p-4 bg-white shadow-lg rounded-lg text-center">
@@ -144,29 +139,20 @@ export default function AddQuestion() {
           />
         </div>
 
-        {/* حقل تاريخ النشر */}
-        <div>
-          <label className="block text-gray-700 font-bold mb-1">تاريخ النشر:</label>
-          <input
-            type="datetime-local"
-            value={publishDate}
-            onInput={(e) => setPublishDate((e.target as HTMLInputElement).value)}
-            className="w-full py-2 px-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-            required
-          />
-        </div>
 
-        {/* حقل تاريخ الإغلاق */}
-        <div>
-          <label className="block text-gray-700 font-bold mb-1">تاريخ الإغلاق:</label>
-          <input
-            type="datetime-local"
-            value={closeDate}
-            onInput={(e) => setCloseDate((e.target as HTMLInputElement).value)}
-            className="w-full py-2 px-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-            required
-          />
-        </div>
+{/* حقل تاريخ الإغلاق */}
+<div>
+  <label className="block text-gray-700 font-bold mb-1">تاريخ ووقت انتهاء العرض:</label>
+  <input
+  type="datetime-local"
+  value={closeDate}
+  onChange={(e) => setCloseDate(e.target.value)}
+  className="w-full py-2 px-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+  required
+/>
+
+</div>
+
 
         {/* زر الإرسال */}
         <button

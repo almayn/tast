@@ -27,14 +27,17 @@ export default function Home() {
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
-        const currentDate = new Date().toISOString(); // الحصول على الوقت الحالي بتنسيق ISO
-        console.log('Current Date:', currentDate); // تسجيل التاريخ الحالي
+        // الحصول على الوقت الحالي وإضافة 3 ساعات (Asia/Riyadh)
+        const currentDate = new Date();
+        currentDate.setHours(currentDate.getHours() + 3); // تعديل للمنطقة الزمنية
+        const formattedDate = currentDate.toISOString().slice(0, 19).replace('T', ' ');
+        console.log('Current Date (Adjusted):', formattedDate); // تسجيل التاريخ الحالي
 
         const { data, error } = await supabase
           .from('questions')
           .select('*')
-          .lte('publish_date', currentDate) // الأسئلة التي تاريخ نشرها أقل من أو يساوي الوقت الحالي
-          .gte('close_date', currentDate); // الأسئلة التي تاريخ إغلاقها أكبر من أو يساوي الوقت الحالي
+          .gte('close_date', formattedDate) // الأسئلة التي تاريخ إغلاقها أكبر من أو يساوي الوقت الحالي
+          .order('close_date', { ascending: true }); // ترتيب حسب الأقرب للإغلاق
 
         if (error) {
           console.error('Supabase Error Details:', JSON.stringify(error, null, 2));
@@ -96,16 +99,26 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg text-center">
-      <div className="bg-blue-600 text-white py-3 rounded-t-lg">
+    <div dir="rtl" className="max-w-md mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg text-center">
+      {/* رأس النموذج مع الشعار */}
+      <div className="flex items-center justify-between bg-blue-600 text-white py-3 px-4 rounded-t-lg">
         <h1 className="text-3xl font-bold" style={{ fontFamily: 'Arial, sans-serif' }}>
           مسابقة الماس الرمضانية
         </h1>
+        <Image
+  src="/images/logoo.png"
+  alt="شعار المسابقة"
+  width={80}
+  height={40}
+  className="rounded-md w-auto h-auto" // الحفاظ على نسبة العرض إلى الارتفاع
+/>
       </div>
 
-      {loading && <p className="text-lg font-semibold text-gray-700">جارٍ تحميل السؤال...</p>}
-      {error && <p className="text-lg font-semibold text-red-500">{error}</p>}
+      {/* حالة التحميل والخطأ */}
+      {loading && <p className="text-lg font-semibold text-gray-700 mt-4">جارٍ تحميل السؤال...</p>}
+      {error && <p className="text-lg font-semibold text-red-500 mt-4">{error}</p>}
 
+      {/* حالة بعد الإرسال */}
       {isSubmitted ? (
         <>
           <div className="mt-4">
@@ -155,9 +168,10 @@ export default function Home() {
       ) : (
         question && (
           <>
-            <h2 className="text-2xl text-blue-800 mb-6 font-bold">
-              {question.question}
-            </h2>
+            {/* السؤال */}
+            <h2 className="text-2xl text-blue-800 my-6 font-bold">{question.question}</h2>
+
+            {/* الخيارات */}
             <div className="space-y-4">
               {[question.option1, question.option2].map((option, index) => (
                 <button
@@ -175,6 +189,8 @@ export default function Home() {
                 </button>
               ))}
             </div>
+
+            {/* حقول الإدخال */}
             <div className="mt-6 space-y-4">
               <input
                 type="text"
@@ -191,7 +207,11 @@ export default function Home() {
                 className="w-full py-2 px-4 border border-gray-300 rounded"
               />
             </div>
-            {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+
+            {/* رسالة الخطأ */}
+            {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
+
+            {/* زر المشاركة */}
             <button
               className="w-full py-3 px-6 bg-blue-500 text-white rounded mt-6 hover:bg-blue-600 transition"
               onClick={handleSubmit}
@@ -201,6 +221,22 @@ export default function Home() {
           </>
         )
       )}
+
+      {/* Footer - رابط صفحة سياسة الخصوصية */}
+      <footer className="mt-8 text-sm text-gray-500">
+        <p>
+          باستخدامك هذا التطبيق، فإنك توافق على{' '}
+          <a
+            href="https://almayn.netlify.app/privacy-policy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline"
+          >
+            سياسة الخصوصية
+          </a>
+          .
+        </p>
+      </footer>
     </div>
   );
 }
