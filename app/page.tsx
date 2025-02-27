@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import Image from 'next/image';
+import { FaSnapchat, FaQrcode } from 'react-icons/fa';
+
 
 export default function Home() {
   interface Question {
@@ -255,6 +257,32 @@ export default function Home() {
           </>
         )
       )}
+{/* زري المشاركة على Snapchat بتصميم جديد */}
+<div className="flex justify-center gap-4 mt-6">
+  {/* زر كود Snapchat باللون الأصفر */}
+  <a
+    href={`https://www.snapchat.com/scan?attachmentUrl=${encodeURIComponent('https://almayn.netlify.app/')}`}
+    className="inline-block p-3 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition"
+    target="_blank"
+    rel="noopener noreferrer"
+    title="مسح كود Snapchat"
+  >
+    <FaQrcode size={24} />
+  </a>
+
+  {/* زر مشاركة الرابط على Snapchat */}
+  <a
+    href={`https://snapchat.com/share?url=${encodeURIComponent('https://almayn.netlify.app/')}`}
+    className="inline-block p-3 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition"
+    target="_blank"
+    rel="noopener noreferrer"
+    title="مشاركة على Snapchat"
+  >
+    <FaSnapchat size={24} />
+  </a>
+</div>
+
+
 
       {/* Footer - رابط صفحة سياسة الخصوصية */}
       <footer className="mt-8 text-sm text-gray-500">
