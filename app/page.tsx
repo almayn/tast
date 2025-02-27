@@ -25,7 +25,14 @@ export default function Home() {
   const [subscriptionNumber, setSubscriptionNumber] = useState<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [currentUrl, setCurrentUrl] = useState('');
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCurrentUrl(window.location.href);
+    }
+  }, []);
+  
   // جلب السؤال عند تحميل الصفحة
   useEffect(() => {
     const fetchQuestion = async () => {
@@ -252,7 +259,7 @@ export default function Home() {
               className="w-full py-3 px-6 bg-blue-500 text-white rounded mt-6 hover:bg-blue-600 transition"
               onClick={handleSubmit}
             >
-              شارك
+              ارسل
             </button>
           </>
         )
@@ -262,10 +269,7 @@ export default function Home() {
   {/* زر مشاركة الرابط على Snapchat */}
   <button
     onClick={() => {
-      if (typeof window !== 'undefined') {
-        const url = window.location.href;
-        window.open(`https://snapchat.com/share?link=${encodeURIComponent(url)}`, '_blank');
-      }
+      window.open(`https://snapchat.com/share?url=${encodeURIComponent(currentUrl)}`, '_blank');
     }}
     className="bg-yellow-400 text-black px-3 py-2 rounded hover:bg-yellow-500 transition flex items-center gap-1"
   >
@@ -275,11 +279,12 @@ export default function Home() {
   {/* زر المشاركة العامة */}
   <button
     onClick={() => {
-      if (typeof window !== 'undefined') {
-        const url = window.location.href;
-        navigator.share
-          ? navigator.share({ title: 'شارك هذه الصفحة', url })
-          : alert('مشاركة غير مدعومة في هذا المتصفح.');
+      if (navigator.share) {
+        navigator
+          .share({ title: 'شارك هذه الصفحة', url: currentUrl })
+          .catch((err) => console.error('خطأ في المشاركة:', err));
+      } else {
+        alert('المشاركة غير مدعومة في هذا المتصفح.');
       }
     }}
     className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition flex items-center gap-1"
@@ -287,6 +292,7 @@ export default function Home() {
     <FaShareAlt size={20} />
   </button>
 </div>
+
 
 
       {/* Footer - رابط صفحة سياسة الخصوصية */}
