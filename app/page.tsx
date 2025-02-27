@@ -119,7 +119,7 @@ export default function Home() {
   };
 
   return (
-    <div dir="rtl" className="max-w-md mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg text-center">
+    <div dir="rtl" className="max-w-md mx-auto mt-2 p-6 bg-white shadow-lg rounded-lg text-center">
       {/* رأس النموذج مع الشعار */}
       <div className="flex items-center justify-between bg-blue-600 text-white py-3 px-4 rounded-t-lg">
         <h1 className="text-3xl font-bold" style={{ fontFamily: 'Arial, sans-serif' }}>
