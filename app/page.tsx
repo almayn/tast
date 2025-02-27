@@ -261,7 +261,7 @@ export default function Home() {
 <div className="flex justify-center gap-4 mt-6">
   {/* زر كود Snapchat باللون الأصفر */}
   <a
-    href={`https://www.snapchat.com/scan?attachmentUrl=${encodeURIComponent('https://almayn.netlify.app/')}`}
+    href={`https://www.snapchat.com/add?shareUrl=${encodeURIComponent('https://almayn.netlify.app')}`}
     className="inline-block p-3 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition"
     target="_blank"
     rel="noopener noreferrer"
