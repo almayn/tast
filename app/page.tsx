@@ -27,13 +27,8 @@ export default function Home() {
   const [subscriptionNumber, setSubscriptionNumber] = useState<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [currentUrl, setCurrentUrl] = useState('');
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setCurrentUrl(window.location.href);
-    }
-  }, []);
+ 
   
   // جلب السؤال عند تحميل الصفحة
   useEffect(() => {
@@ -273,7 +268,7 @@ export default function Home() {
     onClick={() => {
       window.open('https://www.snapchat.com/add/almayn', '_blank');
     }}
-    className="bg-yellow-400 text-black px-4 py-2 rounded-full hover:bg-yellow-500 transition flex items-center gap-2 shadow-md"
+    className="bg-yellow-400 text-black px-4 py-2 rounded-md hover:bg-yellow-500 transition flex items-center gap-2 shadow-md w-32 justify-center"
   >
     <FaSnapchat size={24} />
     <span>تابعنا</span>
@@ -282,34 +277,33 @@ export default function Home() {
   {/* زر المشاركة العامة */}
   <button
     onClick={() => {
+      const urlToShare = window.location.href;
       if (navigator.share) {
         navigator
-          .share({ title: 'شارك هذه الصفحة', url: window.location.href })
+          .share({ title: 'شارك هذه الصفحة', url: urlToShare })
           .catch((err) => console.error('خطأ في المشاركة:', err));
       } else {
         alert('المشاركة غير مدعومة في هذا المتصفح.');
       }
     }}
-    className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition flex items-center gap-2 shadow-md"
+    className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition flex items-center gap-2 shadow-md w-32 justify-center"
   >
     <FaShareAlt size={24} />
     <span>شارك</span>
   </button>
 
   {/* زر الجوائز */}
-<button
-  onClick={() => setShowPrizes(true)}
-  className="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition flex items-center gap-2 shadow-md"
->
-  🎁 الجوائز
-</button>
+  <button
+    onClick={() => setShowPrizes(true)}
+    className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition flex items-center gap-2 shadow-md w-32 justify-center"
+  >
+    🎁 الجوائز
+  </button>
 
-{/* عرض النافذة فقط عند الحاجة */}
-{showPrizes && (
-  <PrizesModal show={showPrizes} onClose={() => setShowPrizes(false)} />
-)}
-
-
+  {/* عرض النافذة فقط عند الحاجة */}
+  {showPrizes && (
+    <PrizesModal show={showPrizes} onClose={() => setShowPrizes(false)} />
+  )}
 </div>
 
 
