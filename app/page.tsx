@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import Image from 'next/image';
 import { FaSnapchat, FaShareAlt } from 'react-icons/fa';
+import PrizesModal from './components/PrizesModal';
+
 
 
 export default function Home() {
@@ -14,7 +16,7 @@ export default function Home() {
     option2: string;
     correct_option: string;
   }
-
+  const [showPrizes, setShowPrizes] = useState(false);
   const [showThankYouMessage, setShowThankYouMessage] = useState(false);
   const [question, setQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
@@ -265,34 +267,49 @@ export default function Home() {
         )
       )}
 {/* أزرار المشاركة */}
-<div className="flex justify-center gap-2 mt-6">
-  {/* زر مشاركة الرابط على Snapchat */}
+<div className="flex justify-center gap-4 mt-6">
+  {/* زر متابعة سناب شات */}
   <button
-  onClick={() => {
-    window.open('https://www.snapchat.com/add/almayn', '_blank');
-  }}
-  className="bg-yellow-400 text-black px-3 py-2 rounded hover:bg-yellow-500 transition flex items-center gap-1"
->
-  <FaSnapchat size={20} />
-  <span>تابعنا على سناب شات</span>
-</button>
-
+    onClick={() => {
+      window.open('https://www.snapchat.com/add/almayn', '_blank');
+    }}
+    className="bg-yellow-400 text-black px-4 py-2 rounded-full hover:bg-yellow-500 transition flex items-center gap-2 shadow-md"
+  >
+    <FaSnapchat size={24} />
+    <span>تابعنا</span>
+  </button>
 
   {/* زر المشاركة العامة */}
   <button
     onClick={() => {
       if (navigator.share) {
         navigator
-          .share({ title: 'شارك هذه الصفحة', url: currentUrl })
+          .share({ title: 'شارك هذه الصفحة', url: window.location.href })
           .catch((err) => console.error('خطأ في المشاركة:', err));
       } else {
         alert('المشاركة غير مدعومة في هذا المتصفح.');
       }
     }}
-    className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition flex items-center gap-1"
+    className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition flex items-center gap-2 shadow-md"
   >
-    <FaShareAlt size={20} />
+    <FaShareAlt size={24} />
+    <span>شارك</span>
   </button>
+
+  {/* زر الجوائز */}
+<button
+  onClick={() => setShowPrizes(true)}
+  className="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition flex items-center gap-2 shadow-md"
+>
+  🎁 الجوائز
+</button>
+
+{/* عرض النافذة فقط عند الحاجة */}
+{showPrizes && (
+  <PrizesModal show={showPrizes} onClose={() => setShowPrizes(false)} />
+)}
+
+
 </div>
 
 
