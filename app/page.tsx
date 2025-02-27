@@ -268,13 +268,15 @@ export default function Home() {
 <div className="flex justify-center gap-2 mt-6">
   {/* زر مشاركة الرابط على Snapchat */}
   <button
-    onClick={() => {
-      window.open(`https://snapchat.com/share?url=${encodeURIComponent(currentUrl)}`, '_blank');
-    }}
-    className="bg-yellow-400 text-black px-3 py-2 rounded hover:bg-yellow-500 transition flex items-center gap-1"
-  >
-    <FaSnapchat size={20} />
-  </button>
+  onClick={() => {
+    window.open('https://www.snapchat.com/add/almayn', '_blank');
+  }}
+  className="bg-yellow-400 text-black px-3 py-2 rounded hover:bg-yellow-500 transition flex items-center gap-1"
+>
+  <FaSnapchat size={20} />
+  <span>تابعنا على سناب شات</span>
+</button>
+
 
   {/* زر المشاركة العامة */}
   <button
