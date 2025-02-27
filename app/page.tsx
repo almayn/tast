@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import Image from 'next/image';
-import { FaSnapchat, FaQrcode, FaShareAlt } from 'react-icons/fa';
-
+import { FaSnapchat, FaShareAlt } from 'react-icons/fa';
 
 
 export default function Home() {
