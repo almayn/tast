@@ -120,7 +120,7 @@ export default function Home() {
           مسابقة الماس الرمضانية
         </h1>
         <Image
-          src="/images/logoo.png"
+          src="/images/logoo2.png"
           alt="شعار المسابقة"
           width={80}
           height={40}
@@ -184,12 +184,23 @@ export default function Home() {
           <>
             {/* معلومات السؤال */}
             <div
-              className="mb-6 text-center p-4 bg-blue-100 rounded-lg"
-              style={{ fontSize: '1.2rem' }}
-            >
-              <strong style={{ fontSize: '1.5rem', color: '#007bff' }}>{question.id}</strong>{' '}
-              {getFormattedDate()}
-            </div>
+  className="mb-4 text-center p-3 bg-gray-100 rounded-lg flex items-center justify-center"
+  style={{ fontSize: '1.1rem' }}
+>
+  {/* إحاطة رقم السؤال بدائرة أصغر */}
+  <span
+    className="inline-flex items-center justify-center w-8 h-8 bg-white border border-blue-500 rounded-full text-blue-500 font-bold"
+    style={{ fontSize: '1rem', marginLeft: '10px' }} // مسافة يدوية بين الدائرة والتاريخ
+  >
+    {question.id}
+  </span>
+  {/* التاريخ مع مسافة فاصلة أكبر */}
+  <span className="text-gray-600">{getFormattedDate()}</span>
+</div>
+
+
+
+
 
             {/* السؤال */}
             <h2 className="text-2xl text-blue-800 my-6 font-bold">{question.question}</h2>
