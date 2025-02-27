@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import Image from 'next/image';
-import { FaSnapchat, FaQrcode } from 'react-icons/fa';
+import { FaSnapchat, FaQrcode, FaShareAlt } from 'react-icons/fa';
+
 
 
 export default function Home() {
@@ -257,31 +258,36 @@ export default function Home() {
           </>
         )
       )}
-{/* زري المشاركة على Snapchat بتصميم جديد */}
-<div className="flex justify-center gap-4 mt-6">
-  {/* زر كود Snapchat باللون الأصفر */}
-  <a
-    href={`https://www.snapchat.com/add?shareUrl=${encodeURIComponent('https://almayn.netlify.app')}`}
-    className="inline-block p-3 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition"
-    target="_blank"
-    rel="noopener noreferrer"
-    title="مسح كود Snapchat"
-  >
-    <FaQrcode size={24} />
-  </a>
-
+{/* أزرار المشاركة */}
+<div className="flex justify-center gap-2 mt-6">
   {/* زر مشاركة الرابط على Snapchat */}
-  <a
-    href={`https://snapchat.com/share?url=${encodeURIComponent('https://almayn.netlify.app/')}`}
-    className="inline-block p-3 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition"
-    target="_blank"
-    rel="noopener noreferrer"
-    title="مشاركة على Snapchat"
+  <button
+    onClick={() => {
+      if (typeof window !== 'undefined') {
+        const url = window.location.href;
+        window.open(`https://snapchat.com/share?link=${encodeURIComponent(url)}`, '_blank');
+      }
+    }}
+    className="bg-yellow-400 text-black px-3 py-2 rounded hover:bg-yellow-500 transition flex items-center gap-1"
   >
-    <FaSnapchat size={24} />
-  </a>
-</div>
+    <FaSnapchat size={20} />
+  </button>
 
+  {/* زر المشاركة العامة */}
+  <button
+    onClick={() => {
+      if (typeof window !== 'undefined') {
+        const url = window.location.href;
+        navigator.share
+          ? navigator.share({ title: 'شارك هذه الصفحة', url })
+          : alert('مشاركة غير مدعومة في هذا المتصفح.');
+      }
+    }}
+    className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition flex items-center gap-1"
+  >
+    <FaShareAlt size={20} />
+  </button>
+</div>
 
 
       {/* Footer - رابط صفحة سياسة الخصوصية */}
