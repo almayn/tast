@@ -206,7 +206,7 @@ const handleSubmit = async () => {
             
           ) : (
             <p className="text-green-600 font-bold text-lg">
-              شكراً لمشاركتك.. تابع الماس لمعرفة النتيجة
+              شكراً لمشاركتك... تابع الماس لمعرفة النتيجة
             </p>
             
           )}
