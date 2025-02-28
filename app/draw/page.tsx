@@ -5,6 +5,9 @@ import { supabase } from '../../lib/supabaseClient';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import Image from 'next/image';
+import Link from 'next/link';
+
+
 
 export default function Draw() {
   const [winner, setWinner] = useState(null);
@@ -166,7 +169,16 @@ export default function Draw() {
           >
             {loading ? 'جاري السحب...' : 'ابدأ السحب'}
           </button>
-        </div>
+      {/* محتوى الصفحة هنا */}
+{/* محتوى المسابقة القديم هنا */}
+      
+      {/* زر العودة للرئيسية */}
+      <Link href="/">
+        <button className="mt-4 py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+          العودة للرئيسية
+        </button>
+      </Link>
+              </div>
       </div>
     </div>
   );
