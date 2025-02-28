@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
-export default function Home() {
+export default function () {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-200">
       {/* الحاوية الرئيسية */}
