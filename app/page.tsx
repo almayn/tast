@@ -1,4 +1,4 @@
-// app/page.tsx
+// app/home/page.tsx
 import Link from 'next/link';
 import Image from 'next/image';
 
