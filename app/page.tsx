@@ -75,35 +75,59 @@ export default function Home() {
   };
 
   // إرسال البيانات إلى Supabase
-  const handleSubmit = async () => {
-    if (!name || !city || !selectedAnswer) {
-      setErrorMessage('يرجى ملء جميع الحقول واختيار إجابة.');
-      return;
-    }
+ // إرسال البيانات إلى Supabase مع التأكد من عدم تكرار الرقم
+const handleSubmit = async () => {
+  if (!name || !city || !selectedAnswer) {
+    setErrorMessage('يرجى ملء جميع الحقول واختيار إجابة.');
+    return;
+  }
 
-    try {
-      const number = Math.floor(1000 + Math.random() * 9000);
-      const { error } = await supabase.from('participants').insert([
-        {
-          name,
-          city,
-          answer: selectedAnswer,
-          subscription_number: number,
-        },
-      ]);
+  try {
+    let number;
+    let isUnique = false;
+
+    // توليد رقم والتحقق من عدم وجوده
+    do {
+      number = Math.floor(1000 + Math.random() * 9000); // توليد رقم من 4 أرقام
+
+      // التحقق من وجود الرقم في قاعدة البيانات
+      const { data, error } = await supabase
+        .from('participants')
+        .select('subscription_number')
+        .eq('subscription_number', number);
 
       if (error) {
-        console.error('Supabase Insert Error Details:', JSON.stringify(error, null, 2));
-        throw error;
+        console.error('Error checking subscription_number:', error);
+        throw new Error('حدث خطأ أثناء التحقق من الرقم.');
       }
 
-      setSubscriptionNumber(number);
-      setIsSubmitted(true);
-    } catch (err) {
-      console.error('Error submitting data:', JSON.stringify(err, null, 2));
-      setErrorMessage('حدث خطأ أثناء إرسال البيانات.');
+      // إذا لم يتم العثور على الرقم، اعتبره فريدًا
+      isUnique = data.length === 0;
+    } while (!isUnique);
+
+    // بعد التأكد من أن الرقم فريد، قم بإرساله إلى Supabase
+    const { error: insertError } = await supabase.from('participants').insert([
+      {
+        name,
+        city,
+        answer: selectedAnswer,
+        subscription_number: number,
+      },
+    ]);
+
+    if (insertError) {
+      console.error('Supabase Insert Error Details:', insertError);
+      throw new Error('حدث خطأ أثناء تسجيل المشاركة.');
     }
-  };
+
+    setSubscriptionNumber(number);
+    setIsSubmitted(true);
+  } catch (err) {
+    console.error('Error submitting data:', JSON.stringify(err, null, 2));
+    setErrorMessage('حدث خطأ أثناء إرسال البيانات.');
+  }
+};
+
 
   // الحصول على التاريخ الميلادي واسم اليوم
   const getFormattedDate = () => {
@@ -179,10 +203,12 @@ export default function Home() {
             >
               نسخ الرقم
             </button>
+            
           ) : (
             <p className="text-green-600 font-bold text-lg">
               شكراً لمشاركتك.. تابع الماس لمعرفة النتيجة
             </p>
+            
           )}
         </>
       ) : (
@@ -230,23 +256,44 @@ export default function Home() {
               ))}
             </div>
 
-            {/* حقول الإدخال */}
-            <div className="mt-6 space-y-4">
-              <input
-                type="text"
-                placeholder="اسمك"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full py-2 px-4 border border-gray-300 rounded"
-              />
-              <input
-                type="text"
-                placeholder="مدينتك"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="w-full py-2 px-4 border border-gray-300 rounded"
-              />
-            </div>
+{/* حقول الإدخال بتصميم جانبي مع إحاطة العنوان */}
+<div className="mt-6 space-y-4 text-right">
+  {/* حقل الاسم */}
+  <div className="flex items-center gap-2">
+    <label
+      htmlFor="name"
+      className="text-md font-semibold text-gray-700 bg-gray-200 border border-gray-300 rounded px-2 py-1"
+    >
+      اسمك:
+    </label>
+    <input
+      id="name"
+      type="text"
+      value={name}
+      onChange={(e) => setName(e.target.value)}
+      className="flex-1 py-2 px-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
+
+  {/* حقل المدينة */}
+  <div className="flex items-center gap-2">
+    <label
+      htmlFor="city"
+      className="text-md font-semibold text-gray-700 bg-gray-200 border border-gray-300 rounded px-2 py-1"
+    >
+      المدينة:
+    </label>
+    <input
+      id="city"
+      type="text"
+      value={city}
+      onChange={(e) => setCity(e.target.value)}
+      className="flex-1 py-2 px-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
+</div>
+
+
 
             {/* رسالة الخطأ */}
             {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
