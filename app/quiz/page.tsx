@@ -153,12 +153,14 @@ const handleSubmit = async () => {
           مسابقة الماس الرمضانية
         </h1>
         <Image
-          src="/images/logoo2.png"
-          alt="شعار المسابقة"
-          width={80}
-          height={40}
-          className="rounded-md w-auto h-auto" // الحفاظ على نسبة العرض إلى الارتفاع
-        />
+  src="/images/almas.PNG"
+  alt="شعار المسابقة"
+  width={0}        // السماح بالحجم التلقائي
+  height={0}       // السماح بالحجم التلقائي
+  layout="intrinsic" // يجعل الصورة تحتفظ بأبعادها الأصلية
+  className="mx-auto"
+/>
+
       </div>
 
       {/* حالة التحميل والخطأ */}
