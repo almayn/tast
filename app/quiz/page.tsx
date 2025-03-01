@@ -155,11 +155,12 @@ const handleSubmit = async () => {
         <Image
   src="/images/almas.PNG"
   alt="شعار المسابقة"
-  width={0}        // السماح بالحجم التلقائي
-  height={0}       // السماح بالحجم التلقائي
-  layout="intrinsic" // يجعل الصورة تحتفظ بأبعادها الأصلية
+  layout="responsive"
+  width={100}   // نسبة العرض
+  height={50}   // نسبة الارتفاع
   className="mx-auto"
 />
+
 
       </div>
 
