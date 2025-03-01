@@ -2,20 +2,21 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
-export default function () {
+export default function home () {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-200">
       {/* الحاوية الرئيسية */}
       <div className="bg-white shadow-2xl rounded-xl p-8 text-center max-w-xs w-full border-4 border-blue-200">
         {/* شعار الماس */}
-        <Image
-  src="/images/almas.PNG"
-  alt="شعار الماس"
-  width={120}
-  height={120}
-  className="mx-auto mb-4 drop-shadow-xl cursor-pointer"
-/>
-
+        <Link href="/">
+          <Image
+            src="/almas.PNG"
+            alt="شعار الماس"
+            width={120}
+            height={120}
+            className="mx-auto mb-4 drop-shadow-xl cursor-pointer"
+          />
+        </Link>
 
         {/* عنوان المسابقة */}
         <h1 className="text-4xl font-extrabold text-blue-800 mb-2 drop-shadow-lg">

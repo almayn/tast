@@ -11,8 +11,8 @@ import Link from 'next/link';
 
 
 
-export default function Home() {
-  interface Question {
+export default function QuizPage() {
+    interface Question {
     id: number; // إضافة حقل id لتحديد رقم السؤال
     question: string;
     option1: string;

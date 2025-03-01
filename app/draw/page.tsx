@@ -9,7 +9,7 @@ import Link from 'next/link';
 
 
 
-export default function Draw() {
+export default function DrawPage() {
   const [winner, setWinner] = useState(null);
   const [winnerName, setWinnerName] = useState('');
   const [loading, setLoading] = useState(false);
