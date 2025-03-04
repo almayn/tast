@@ -6,10 +6,11 @@ import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 
 
-export default function DrawPage() {
+export default function Draw() {
   const [winner, setWinner] = useState(null);
   const [winnerName, setWinnerName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,8 +18,81 @@ export default function DrawPage() {
   const [countdown, setCountdown] = useState(6);
   const [showCongrats, setShowCongrats] = useState(false);
   const [started, setStarted] = useState(false);
+  const [questionId, setQuestionId] = useState<number | null>(null); // رقم السؤال الحالي
 
-  // الأصوات
+  // ✅ دالة لتحديث حالة الأسئلة
+  const updateQuestionsStatus = async () => {
+    try {
+      // جلب توقيت الخادم باستخدام الدالة RPC الجديدة
+      const { data: serverTimeData, error: rpcError } = await supabase.rpc('get_current_timestamp');
+      if (rpcError) {
+        console.error('❌ خطأ أثناء جلب توقيت الخادم:', rpcError.message);
+        return;
+      }
+
+      const currentTime = serverTimeData || new Date().toISOString();
+      console.log("⏰ توقيت الخادم:", currentTime);
+
+      // تحديث الأسئلة التي انتهى وقت نشرها
+      const { data: updatedQuestions, error: updateError } = await supabase
+        .from('questions')
+        .update({ status: 'open' })
+        .lte('close_date', currentTime) // الأسئلة التي انتهى وقتها
+        .eq('status', 'waiting') // فقط الأسئلة ذات الحالة "waiting"
+        .select(); // استرجاع الأسئلة المحدثة للتحقق
+
+      if (updateError) {
+        console.error('❌ خطأ أثناء تحديث حالة الأسئلة:', updateError.message);
+      } else {
+        console.log('✅ تم تحديث حالة الأسئلة بنجاح:', updatedQuestions);
+      }
+    } catch (err) {
+      console.error('❌ خطأ عام أثناء تحديث الأسئلة:', err);
+    }
+  };
+
+  // ✅ جلب أحدث سؤال عند تحميل الصفحة
+  useEffect(() => {
+    const fetchLatestQuestion = async () => {
+      try {
+        // تحديث حالة الأسئلة أولاً
+        await updateQuestionsStatus();
+
+        // جلب توقيت الخادم
+        const { data: serverTimeData, error: rpcError } = await supabase.rpc('get_current_timestamp');
+        if (rpcError) {
+          console.error('❌ خطأ أثناء جلب توقيت الخادم:', rpcError.message);
+          return;
+        }
+
+        const currentTime = serverTimeData || new Date().toISOString();
+
+        // جلب أحدث سؤال بناءً على توقيت الخادم
+        const { data: latestQuestion, error: questionError } = await supabase
+          .from('questions')
+          .select('id, close_date, status')
+          .lte('close_date', currentTime) // الأسئلة التي انتهى وقتها بناءً على توقيت الخادم
+          .eq('status', 'open') // فقط الأسئلة ذات الحالة "open"
+          .order('close_date', { ascending: false }) // الأحدث أولاً
+          .limit(1)
+          .single();
+
+        if (questionError || !latestQuestion) {
+          alert('❌ لم يتم العثور على سؤال متاح للسحب.');
+          return;
+        }
+
+        setQuestionId(latestQuestion.id); // حفظ رقم السؤال الحالي
+        console.log("📌 رقم السؤال الحالي:", latestQuestion.id);
+      } catch (error) {
+        console.error('❌ خطأ أثناء جلب السؤال:', error);
+      }
+    };
+
+    fetchLatestQuestion();
+  }, []);
+
+  // ✅ الأصوات
   const playTimerWarning = () => {
     const audio = new Audio('/sounds/timer-warning.mp3');
     audio.volume = 0.5;
@@ -31,8 +105,13 @@ export default function DrawPage() {
     audio.play();
   };
 
-  // دالة لسحب رقم عشوائي
+  // ✅ دالة السحب
   const drawWinner = async () => {
+    if (!questionId) {
+      alert('❌ لم يتم العثور على السؤال الحالي.');
+      return;
+    }
+
     setLoading(true);
     setStarted(true);
     setProgress(0);
@@ -57,44 +136,80 @@ export default function DrawPage() {
         timer -= 0.01;
       }, 10);
     } catch (err) {
-      console.error('Error drawing winner:', err);
-      alert('حدث خطأ أثناء السحب.');
+      console.error('❌ خطأ أثناء السحب:', err);
+      alert('❌ حدث خطأ أثناء السحب.');
     }
   };
 
-  // دالة اختيار الفائز
+  // ✅ دالة اختيار الفائز
   const chooseWinner = async () => {
     try {
-      const { data: participants, error: participantsError } = await supabase
-        .from('participants')
-        .select('subscription_number, name');
-      if (participantsError) throw participantsError;
+      if (!questionId) {
+        alert('❌ لم يتم العثور على السؤال الحالي.');
+        return;
+      }
 
+      // ✅ جلب جميع الفائزين السابقين لهذا السؤال
       const { data: winners, error: winnersError } = await supabase
         .from('winners')
-        .select('subscription_number');
+        .select('subscription_number')
+        .eq('question_id', questionId);
+
       if (winnersError) throw winnersError;
 
       const winningNumbers = winners.map((item) => item.subscription_number);
-      const availableNumbers = participants
-        .filter((item) => !winningNumbers.includes(item.subscription_number));
 
-      if (availableNumbers.length === 0) {
-        alert('لا توجد أرقام متاحة.');
+      // ✅ جلب جميع المشاركين غير الفائزين
+      let query = supabase
+        .from('participants')
+        .select('subscription_number, name')
+        .eq('question_id', questionId);
+
+      if (winningNumbers.length > 0) {
+        query = query.not('subscription_number', 'in', `(${winningNumbers.join(',')})`);
+      }
+
+      const { data: participants, error: participantsError } = await query;
+
+      if (participantsError) throw participantsError;
+
+      console.log("📌 المشاركون غير الفائزين لهذا السؤال:", participants);
+
+      if (!participants || participants.length === 0) {
+        alert('⚠️ لا يوجد مشاركون جدد لهذا السؤال.');
         setLoading(false);
         return;
       }
 
-      const randomIndex = Math.floor(Math.random() * availableNumbers.length);
-      const winningNumber = availableNumbers[randomIndex].subscription_number;
-      const winnerName = availableNumbers[randomIndex].name;
+      // ✅ اختيار فائز عشوائي
+      const randomIndex = Math.floor(Math.random() * participants.length);
+      const winningNumber = participants[randomIndex].subscription_number;
+      const winnerName = participants[randomIndex].name;
 
+      // ✅ تسجيل الفائز في قاعدة البيانات
       const { error: insertError } = await supabase.from('winners').insert([
-        { subscription_number: winningNumber },
+        {
+          subscription_number: winningNumber,
+          question_id: questionId,
+        },
       ]);
+
       if (insertError) {
-        console.error('Supabase Insert Error Details:', insertError);
-        throw new Error('حدث خطأ أثناء تسجيل الفائز.');
+        console.error('❌ خطأ أثناء تسجيل الفائز:', insertError);
+        throw new Error('❌ حدث خطأ أثناء تسجيل الفائز.');
+      }
+
+      // ✅ تحديث حالة السؤال إلى "closed" بعد نجاح السحب
+      const { error: updateError } = await supabase
+        .from('questions')
+        .update({ status: 'closed' }) // تحويل الحالة إلى "closed"
+        .eq('id', questionId);
+
+      if (updateError) {
+        console.error('❌ خطأ أثناء تحديث حالة السؤال:', updateError);
+        alert('⚠️ حدث خطأ أثناء تحديث حالة السؤال.');
+      } else {
+        console.log(`✅ تم إغلاق السؤال رقم ${questionId} بنجاح.`);
       }
 
       setWinner(winningNumber);
@@ -104,8 +219,8 @@ export default function DrawPage() {
         setShowCongrats(true);
       }, 1000);
     } catch (err) {
-      console.error('Error choosing winner:', JSON.stringify(err, null, 2));
-      alert('حدث خطأ أثناء اختيار الفائز.');
+      console.error('❌ خطأ أثناء اختيار الفائز:', err);
+      alert('❌ حدث خطأ أثناء اختيار الفائز.');
     } finally {
       setLoading(false);
     }
@@ -114,10 +229,17 @@ export default function DrawPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="max-w-sm w-full mx-auto p-4 bg-white shadow-xl rounded-lg text-center relative overflow-hidden">
-        {/* عنوان المسابقة بخلفية زرقاء */}
+        {/* عنوان المسابقة */}
         <div className="bg-blue-600 text-white rounded-t-lg py-2 mb-4">
           <h2 className="text-2xl font-bold">مسابقة الماس الرمضانية</h2>
         </div>
+
+        {/* عرض رقم السؤال */}
+        {questionId && (
+          <p className="text-lg font-semibold text-gray-800">
+            رقم السؤال: <span className="text-blue-600 font-bold">{questionId}</span>
+          </p>
+        )}
 
         {/* صورة الراعي */}
         <div className="mb-2">
@@ -153,23 +275,18 @@ export default function DrawPage() {
           </div>
 
           <p className="text-lg text-gray-800 font-bold mt-2">
-            {showCongrats
-              ? `الف مبروك! ${winnerName}`
-              : 'مسابقة الماس'}
+            {showCongrats ? `🎉 ألف مبروك! ${winnerName}` : 'مسابقة الماس'}
           </p>
 
           <button
             className={`w-full py-2 text-lg font-semibold rounded transition ${
-              loading
-                ? 'bg-orange-400 cursor-not-allowed animate-pulse'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
+              loading ? 'bg-orange-400 cursor-not-allowed animate-pulse' : 'bg-blue-500 text-white hover:bg-blue-600'
             }`}
             onClick={drawWinner}
             disabled={loading}
           >
             {loading ? 'جاري السحب...' : 'ابدأ السحب'}
           </button>
-      {/* محتوى الصفحة هنا */}
 {/* محتوى المسابقة القديم هنا */}
       
       {/* زر العودة للرئيسية */}
