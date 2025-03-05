@@ -18,8 +18,10 @@ export default function Draw() {
   // ✅ دالة لتحديث حالة الأسئلة
   const updateQuestionsStatus = async () => {
     try {
-      let currentTime = new Date().toISOString(); // ✅ تغيير `const` إلى `let`
-console.log("⏰ التوقيت الحالي UTC:", currentTime); // ✅ تأكيد الاستخدام
+      const currentTime = new Date().toISOString();
+void currentTime; // ✅ هذا يمنع تحذير ESLint لكنه لا يؤثر على عمل الكود
+console.log("⏰ التوقيت الحالي UTC:", currentTime);
+
 
 
   
