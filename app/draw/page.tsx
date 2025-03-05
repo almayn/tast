@@ -1,13 +1,10 @@
-// app/draw/page.tsx
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect } from 'react';
-
 
 
 export default function Draw() {
@@ -23,72 +20,76 @@ export default function Draw() {
   // ✅ دالة لتحديث حالة الأسئلة
   const updateQuestionsStatus = async () => {
     try {
-      // جلب توقيت الخادم باستخدام الدالة RPC الجديدة
-      const { data: serverTimeData, error: rpcError } = await supabase.rpc('get_current_timestamp');
-      if (rpcError) {
-        console.error('❌ خطأ أثناء جلب توقيت الخادم:', rpcError.message);
+      const currentTime = new Date().toISOString();
+      console.log("⏰ التوقيت الحالي UTC:", currentTime);
+  
+      const { data: questions, error } = await supabase
+        .from('questions')
+        .select('id, close_date, status')
+        .eq('status', 'waiting');
+  
+      if (error) {
+        console.error('❌ خطأ أثناء جلب الأسئلة:', error);
         return;
       }
-
-      const currentTime = serverTimeData || new Date().toISOString();
-      console.log("⏰ توقيت الخادم:", currentTime);
-
-      // تحديث الأسئلة التي انتهى وقت نشرها
-      const { data: updatedQuestions, error: updateError } = await supabase
-        .from('questions')
-        .update({ status: 'open' })
-        .lte('close_date', currentTime) // الأسئلة التي انتهى وقتها
-        .eq('status', 'waiting') // فقط الأسئلة ذات الحالة "waiting"
-        .select(); // استرجاع الأسئلة المحدثة للتحقق
-
-      if (updateError) {
-        console.error('❌ خطأ أثناء تحديث حالة الأسئلة:', updateError.message);
-      } else {
-        console.log('✅ تم تحديث حالة الأسئلة بنجاح:', updatedQuestions);
+  
+      const questionsToUpdate = questions.filter(q => new Date(q.close_date) < new Date(currentTime));
+  
+      if (questionsToUpdate.length > 0) {
+        const { error: updateError } = await supabase
+          .from('questions')
+          .update({ status: 'closed' })
+          .in('id', questionsToUpdate.map(q => q.id));
+  
+        if (updateError) {
+          console.error('❌ خطأ أثناء تحديث حالة الأسئلة:', updateError);
+          return;
+        }
       }
+  
+      console.log('✅ تم تحديث الأسئلة بنجاح.');
     } catch (err) {
-      console.error('❌ خطأ عام أثناء تحديث الأسئلة:', err);
+      console.error('❌ خطأ أثناء تحديث الأسئلة:', err);
     }
   };
-
+  
+  
   // ✅ جلب أحدث سؤال عند تحميل الصفحة
   useEffect(() => {
     const fetchLatestQuestion = async () => {
       try {
-        // تحديث حالة الأسئلة أولاً
         await updateQuestionsStatus();
-
-        // جلب توقيت الخادم
+  
         const { data: serverTimeData, error: rpcError } = await supabase.rpc('get_current_timestamp');
         if (rpcError) {
           console.error('❌ خطأ أثناء جلب توقيت الخادم:', rpcError.message);
           return;
         }
-
+  
         const currentTime = serverTimeData || new Date().toISOString();
-
-        // جلب أحدث سؤال بناءً على توقيت الخادم
+        console.log("⏰ توقيت الخادم الحالي:", currentTime);
+  
         const { data: latestQuestion, error: questionError } = await supabase
           .from('questions')
           .select('id, close_date, status')
-          .lte('close_date', currentTime) // الأسئلة التي انتهى وقتها بناءً على توقيت الخادم
-          .eq('status', 'open') // فقط الأسئلة ذات الحالة "open"
-          .order('close_date', { ascending: false }) // الأحدث أولاً
+          .eq('status', 'open')
+          .lte('close_date', currentTime) // مقارنة مع currentTime
+          .order('close_date', { ascending: false })
           .limit(1)
           .single();
-
+  
         if (questionError || !latestQuestion) {
           alert('❌ لم يتم العثور على سؤال متاح للسحب.');
           return;
         }
-
-        setQuestionId(latestQuestion.id); // حفظ رقم السؤال الحالي
+  
+        setQuestionId(latestQuestion.id);
         console.log("📌 رقم السؤال الحالي:", latestQuestion.id);
       } catch (error) {
         console.error('❌ خطأ أثناء جلب السؤال:', error);
       }
     };
-
+  
     fetchLatestQuestion();
   }, []);
 
@@ -148,72 +149,73 @@ export default function Draw() {
         alert('❌ لم يتم العثور على السؤال الحالي.');
         return;
       }
-
+  
       // ✅ جلب جميع الفائزين السابقين لهذا السؤال
       const { data: winners, error: winnersError } = await supabase
         .from('winners')
         .select('subscription_number')
         .eq('question_id', questionId);
-
+  
       if (winnersError) throw winnersError;
-
+  
       const winningNumbers = winners.map((item) => item.subscription_number);
-
+  
       // ✅ جلب جميع المشاركين غير الفائزين
       let query = supabase
         .from('participants')
-        .select('subscription_number, name')
+        .select('subscription_number, name, city') // ✅ إضافة `city`
         .eq('question_id', questionId);
-
+  
       if (winningNumbers.length > 0) {
         query = query.not('subscription_number', 'in', `(${winningNumbers.join(',')})`);
       }
-
+  
       const { data: participants, error: participantsError } = await query;
-
+  
       if (participantsError) throw participantsError;
-
+  
       console.log("📌 المشاركون غير الفائزين لهذا السؤال:", participants);
-
+  
       if (!participants || participants.length === 0) {
         alert('⚠️ لا يوجد مشاركون جدد لهذا السؤال.');
         setLoading(false);
         return;
       }
-
+  
       // ✅ اختيار فائز عشوائي
       const randomIndex = Math.floor(Math.random() * participants.length);
-      const winningNumber = participants[randomIndex].subscription_number;
-      const winnerName = participants[randomIndex].name;
-
-      // ✅ تسجيل الفائز في قاعدة البيانات
+      const winningData = participants[randomIndex];
+  
+      // ✅ تسجيل الفائز في قاعدة البيانات مع الاسم والمدينة
       const { error: insertError } = await supabase.from('winners').insert([
         {
-          subscription_number: winningNumber,
+          subscription_number: winningData.subscription_number,
           question_id: questionId,
+          name: winningData.name,  // ✅ تخزين الاسم
+          city: winningData.city,  // ✅ تخزين المدينة
         },
       ]);
-
+  
       if (insertError) {
-        console.error('❌ خطأ أثناء تسجيل الفائز:', insertError);
-        throw new Error('❌ حدث خطأ أثناء تسجيل الفائز.');
+        console.error('❌ خطأ أثناء تسجيل الفائز:', JSON.stringify(insertError, null, 2));
+        throw new Error(`❌ حدث خطأ أثناء تسجيل الفائز: ${insertError.message || 'خطأ غير معروف'}`);
       }
-
+      
       // ✅ تحديث حالة السؤال إلى "closed" بعد نجاح السحب
       const { error: updateError } = await supabase
         .from('questions')
         .update({ status: 'closed' }) // تحويل الحالة إلى "closed"
         .eq('id', questionId);
-
+  
       if (updateError) {
         console.error('❌ خطأ أثناء تحديث حالة السؤال:', updateError);
         alert('⚠️ حدث خطأ أثناء تحديث حالة السؤال.');
       } else {
         console.log(`✅ تم إغلاق السؤال رقم ${questionId} بنجاح.`);
       }
-
-      setWinner(winningNumber);
-      setWinnerName(winnerName);
+  
+      setWinner(winningData.subscription_number);
+      setWinnerName(`${winningData.name} من ${winningData.city}`); // ✅ عرض الاسم والمدينة مع النتيجة
       playCheer();
       setTimeout(() => {
         setShowCongrats(true);
@@ -225,6 +227,7 @@ export default function Draw() {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -287,15 +290,13 @@ export default function Draw() {
           >
             {loading ? 'جاري السحب...' : 'ابدأ السحب'}
           </button>
-{/* محتوى المسابقة القديم هنا */}
-      
-      {/* زر العودة للرئيسية */}
+        </div>
+            {/* زر العودة للرئيسية */}
       <Link href="/">
         <button className="mt-4 py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
           العودة للرئيسية
         </button>
       </Link>
-              </div>
       </div>
     </div>
   );

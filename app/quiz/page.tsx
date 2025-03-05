@@ -5,6 +5,8 @@ import { supabase } from '../../lib/supabaseClient';
 import Image from 'next/image';
 import { FaSnapchat, FaShareAlt } from 'react-icons/fa';
 import PrizesModal from '.././components/PrizesModal';
+import Link from 'next/link';
+
 
 
 
@@ -387,7 +389,12 @@ style={{ fontSize: '1.1rem' }}
 )}
 </div>
 
-
+       {/* زر العودة للرئيسية */}
+       <Link href="/">
+        <button className="mt-4 py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+          العودة للرئيسية
+        </button>
+      </Link>
 
     {/* Footer - رابط صفحة سياسة الخصوصية */}
     <footer className="mt-8 text-sm text-gray-500">
