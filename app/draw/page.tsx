@@ -18,9 +18,10 @@ export default function Draw() {
   // ✅ دالة لتحديث حالة الأسئلة
   const updateQuestionsStatus = async () => {
     try {
-      const currentTime = new Date().toISOString();
-      
-      console.log("⏰ التوقيت الحالي UTC:", currentTime); // ✅ تم استخدام المتغير هنا
+      let currentTime = new Date().toISOString(); // ✅ تغيير `const` إلى `let`
+console.log("⏰ التوقيت الحالي UTC:", currentTime); // ✅ تأكيد الاستخدام
+
+
   
       const { data: questions, error } = await supabase
         .from('questions')
@@ -32,12 +33,6 @@ export default function Draw() {
         return;
       }
   
-      if (!questions || questions.length === 0) {
-        console.log('⚠️ لا توجد أسئلة تحتاج إلى التحديث.');
-        return;
-      }
-  
-      // ✅ طباعة الأسئلة للتحقق
       questions.forEach(q => {
         console.log(`📌 [تحليل قبل التحديث] سؤال ${q.id}: close_date=${q.close_date}, مقارنة بـ currentTime=${currentTime}`);
       });
@@ -45,11 +40,11 @@ export default function Draw() {
       const questionsToUpdate = questions.filter(q => new Date(q.close_date) <= new Date(currentTime));
   
       if (questionsToUpdate.length === 0) {
-        console.log('⚠️ لا توجد أسئلة تستحق التحديث.');
+        console.log('⚠️ لا توجد أسئلة تحتاج إلى التحديث.');
         return;
       }
   
-      console.log('✅ سيتم تحديث الأسئلة التالية:', questionsToUpdate.map(q => q.id));
+      console.log('✅ سيتم تحديث الأسئلة التالية:', questionsToUpdate);
   
       const { error: updateError } = await supabase
         .from('questions')
@@ -62,8 +57,8 @@ export default function Draw() {
       }
   
       console.log('✅ تم تحديث الأسئلة بنجاح.');
-      
-      // ✅ التأكد أن التحديث تم
+  
+      // ✅ **بعد التحديث، تحقق مما إذا كان التحديث قد حدث فعليًا**
       const { data: updatedQuestions, error: fetchUpdatedError } = await supabase
         .from('questions')
         .select('id, status, close_date')
@@ -74,12 +69,10 @@ export default function Draw() {
       } else {
         console.log('🔄 تحقق من الأسئلة بعد التحديث:', updatedQuestions);
       }
-  
     } catch (err) {
       console.error('❌ خطأ أثناء تحديث الأسئلة:', err);
     }
   };
-  
   
   
   // ✅ جلب أحدث سؤال عند تحميل الصفحة
