@@ -4,8 +4,6 @@ import { supabase } from '../../lib/supabaseClient';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import Image from 'next/image';
-import Link from 'next/link';
-
 
 export default function Draw() {
   const [winner, setWinner] = useState(null);
@@ -20,6 +18,7 @@ export default function Draw() {
   // ✅ دالة لتحديث حالة الأسئلة
   const updateQuestionsStatus = async () => {
     try {
+      // eslint-disable-next-line no-unused-vars
       const currentTime = new Date().toISOString();
       console.log("⏰ التوقيت الحالي UTC:", currentTime);
   
@@ -33,21 +32,42 @@ export default function Draw() {
         return;
       }
   
-      const questionsToUpdate = questions.filter(q => new Date(q.close_date) < new Date(currentTime));
+      questions.forEach(q => {
+        console.log(`📌 [تحليل قبل التحديث] سؤال ${q.id}: close_date=${q.close_date}, مقارنة بـ currentTime=${currentTime}`);
+      });
   
-      if (questionsToUpdate.length > 0) {
-        const { error: updateError } = await supabase
-          .from('questions')
-          .update({ status: 'closed' })
-          .in('id', questionsToUpdate.map(q => q.id));
+      const questionsToUpdate = questions.filter(q => new Date(q.close_date) <= new Date(currentTime));
   
-        if (updateError) {
-          console.error('❌ خطأ أثناء تحديث حالة الأسئلة:', updateError);
-          return;
-        }
+      if (questionsToUpdate.length === 0) {
+        console.log('⚠️ لا توجد أسئلة تحتاج إلى التحديث.');
+        return;
+      }
+  
+      console.log('✅ سيتم تحديث الأسئلة التالية:', questionsToUpdate);
+  
+      const { error: updateError } = await supabase
+        .from('questions')
+        .update({ status: 'open' })
+        .in('id', questionsToUpdate.map(q => q.id));
+  
+      if (updateError) {
+        console.error('❌ خطأ أثناء تحديث حالة الأسئلة:', updateError);
+        return;
       }
   
       console.log('✅ تم تحديث الأسئلة بنجاح.');
+  
+      // ✅ **بعد التحديث، تحقق مما إذا كان التحديث قد حدث فعليًا**
+      const { data: updatedQuestions, error: fetchUpdatedError } = await supabase
+        .from('questions')
+        .select('id, status, close_date')
+        .in('id', questionsToUpdate.map(q => q.id));
+  
+      if (fetchUpdatedError) {
+        console.error('❌ خطأ عند التحقق من التحديث:', fetchUpdatedError);
+      } else {
+        console.log('🔄 تحقق من الأسئلة بعد التحديث:', updatedQuestions);
+      }
     } catch (err) {
       console.error('❌ خطأ أثناء تحديث الأسئلة:', err);
     }
@@ -58,38 +78,40 @@ export default function Draw() {
   useEffect(() => {
     const fetchLatestQuestion = async () => {
       try {
+        // تحديث حالة الأسئلة أولاً
         await updateQuestionsStatus();
-  
+
+        // جلب توقيت الخادم
         const { data: serverTimeData, error: rpcError } = await supabase.rpc('get_current_timestamp');
         if (rpcError) {
           console.error('❌ خطأ أثناء جلب توقيت الخادم:', rpcError.message);
           return;
         }
-  
+
         const currentTime = serverTimeData || new Date().toISOString();
-        console.log("⏰ توقيت الخادم الحالي:", currentTime);
-  
+
+        // جلب أحدث سؤال بناءً على توقيت الخادم
         const { data: latestQuestion, error: questionError } = await supabase
-          .from('questions')
-          .select('id, close_date, status')
-          .eq('status', 'open')
-          .lte('close_date', currentTime) // مقارنة مع currentTime
-          .order('close_date', { ascending: false })
-          .limit(1)
-          .single();
-  
+        .from('questions')
+        .select('id, close_date, status')
+        .eq('status', 'open') // ✅ البحث فقط عن الأسئلة المفتوحة
+        .order('close_date', { ascending: false }) 
+        .limit(1)
+        .single();
+      
+
         if (questionError || !latestQuestion) {
           alert('❌ لم يتم العثور على سؤال متاح للسحب.');
           return;
         }
-  
-        setQuestionId(latestQuestion.id);
+
+        setQuestionId(latestQuestion.id); // حفظ رقم السؤال الحالي
         console.log("📌 رقم السؤال الحالي:", latestQuestion.id);
       } catch (error) {
         console.error('❌ خطأ أثناء جلب السؤال:', error);
       }
     };
-  
+
     fetchLatestQuestion();
   }, []);
 
@@ -291,12 +313,6 @@ export default function Draw() {
             {loading ? 'جاري السحب...' : 'ابدأ السحب'}
           </button>
         </div>
-            {/* زر العودة للرئيسية */}
-      <Link href="/">
-        <button className="mt-4 py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-          العودة للرئيسية
-        </button>
-      </Link>
       </div>
     </div>
   );
