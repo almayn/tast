@@ -19,8 +19,13 @@ export default function Draw() {
   const updateQuestionsStatus = async () => {
     try {
       const currentTime = new Date().toISOString();
-      console.log("⏰ التوقيت الحالي UTC:", currentTime); // ✅ استخدام المتغير في السجل
-      
+console.log("⏰ التوقيت الحالي UTC:", currentTime);
+
+// ✅ إضافة استخدام بسيط للمتغير
+if (!currentTime) {
+  console.warn("⚠️ لم يتم تحديد توقيت.");
+}
+
   
       const { data: questions, error } = await supabase
         .from('questions')
