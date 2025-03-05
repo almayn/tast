@@ -18,9 +18,9 @@ export default function Draw() {
   // ✅ دالة لتحديث حالة الأسئلة
   const updateQuestionsStatus = async () => {
     try {
-      // eslint-disable-next-line no-unused-vars
       const currentTime = new Date().toISOString();
-      console.log("⏰ التوقيت الحالي UTC:", currentTime);
+      console.log("⏰ التوقيت الحالي UTC:", currentTime); // ✅ استخدام المتغير في السجل
+      
   
       const { data: questions, error } = await supabase
         .from('questions')
