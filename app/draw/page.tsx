@@ -19,13 +19,8 @@ export default function Draw() {
   const updateQuestionsStatus = async () => {
     try {
       const currentTime = new Date().toISOString();
-console.log("⏰ التوقيت الحالي UTC:", currentTime);
-
-// ✅ إضافة استخدام بسيط للمتغير
-if (!currentTime) {
-  console.warn("⚠️ لم يتم تحديد توقيت.");
-}
-
+      
+      console.log("⏰ التوقيت الحالي UTC:", currentTime); // ✅ تم استخدام المتغير هنا
   
       const { data: questions, error } = await supabase
         .from('questions')
@@ -37,6 +32,12 @@ if (!currentTime) {
         return;
       }
   
+      if (!questions || questions.length === 0) {
+        console.log('⚠️ لا توجد أسئلة تحتاج إلى التحديث.');
+        return;
+      }
+  
+      // ✅ طباعة الأسئلة للتحقق
       questions.forEach(q => {
         console.log(`📌 [تحليل قبل التحديث] سؤال ${q.id}: close_date=${q.close_date}, مقارنة بـ currentTime=${currentTime}`);
       });
@@ -44,11 +45,11 @@ if (!currentTime) {
       const questionsToUpdate = questions.filter(q => new Date(q.close_date) <= new Date(currentTime));
   
       if (questionsToUpdate.length === 0) {
-        console.log('⚠️ لا توجد أسئلة تحتاج إلى التحديث.');
+        console.log('⚠️ لا توجد أسئلة تستحق التحديث.');
         return;
       }
   
-      console.log('✅ سيتم تحديث الأسئلة التالية:', questionsToUpdate);
+      console.log('✅ سيتم تحديث الأسئلة التالية:', questionsToUpdate.map(q => q.id));
   
       const { error: updateError } = await supabase
         .from('questions')
@@ -61,8 +62,8 @@ if (!currentTime) {
       }
   
       console.log('✅ تم تحديث الأسئلة بنجاح.');
-  
-      // ✅ **بعد التحديث، تحقق مما إذا كان التحديث قد حدث فعليًا**
+      
+      // ✅ التأكد أن التحديث تم
       const { data: updatedQuestions, error: fetchUpdatedError } = await supabase
         .from('questions')
         .select('id, status, close_date')
@@ -73,10 +74,12 @@ if (!currentTime) {
       } else {
         console.log('🔄 تحقق من الأسئلة بعد التحديث:', updatedQuestions);
       }
+  
     } catch (err) {
       console.error('❌ خطأ أثناء تحديث الأسئلة:', err);
     }
   };
+  
   
   
   // ✅ جلب أحدث سؤال عند تحميل الصفحة
