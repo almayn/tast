@@ -18,7 +18,8 @@ export default function Draw() {
   // ✅ دالة لتحديث حالة الأسئلة
   const updateQuestionsStatus = async () => {
     try {
-      console.log("⏰ التوقيت الحالي UTC:", new Date().toISOString()); // ✅ طباعة التوقيت دون تعريف متغير
+      const currentTime = new Date().toISOString();
+      console.log("⏰ التوقيت الحالي UTC:", currentTime);
   
       const { data: questions, error } = await supabase
         .from('questions')
@@ -30,7 +31,11 @@ export default function Draw() {
         return;
       }
   
-      const questionsToUpdate = questions.filter(q => new Date(q.close_date) <= new Date()); // ✅ بدون متغير خارجي
+      questions.forEach(q => {
+        console.log(`📌 [تحليل قبل التحديث] سؤال ${q.id}: close_date=${q.close_date}, مقارنة بـ currentTime=${currentTime}`);
+      });
+  
+      const questionsToUpdate = questions.filter(q => new Date(q.close_date) <= new Date(currentTime));
   
       if (questionsToUpdate.length === 0) {
         console.log('⚠️ لا توجد أسئلة تحتاج إلى التحديث.');
@@ -50,6 +55,18 @@ export default function Draw() {
       }
   
       console.log('✅ تم تحديث الأسئلة بنجاح.');
+  
+      // ✅ **بعد التحديث، تحقق مما إذا كان التحديث قد حدث فعليًا**
+      const { data: updatedQuestions, error: fetchUpdatedError } = await supabase
+        .from('questions')
+        .select('id, status, close_date')
+        .in('id', questionsToUpdate.map(q => q.id));
+  
+      if (fetchUpdatedError) {
+        console.error('❌ خطأ عند التحقق من التحديث:', fetchUpdatedError);
+      } else {
+        console.log('🔄 تحقق من الأسئلة بعد التحديث:', updatedQuestions);
+      }
     } catch (err) {
       console.error('❌ خطأ أثناء تحديث الأسئلة:', err);
     }
@@ -70,6 +87,7 @@ export default function Draw() {
           return;
         }
 
+        const currentTime = serverTimeData || new Date().toISOString();
 
         // جلب أحدث سؤال بناءً على توقيت الخادم
         const { data: latestQuestion, error: questionError } = await supabase
