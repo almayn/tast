@@ -70,7 +70,6 @@ export default function Draw() {
           return;
         }
 
-        const currentTime = serverTimeData || new Date().toISOString();
 
         // جلب أحدث سؤال بناءً على توقيت الخادم
         const { data: latestQuestion, error: questionError } = await supabase
