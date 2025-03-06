@@ -15,8 +15,3 @@ const withPWA = require('next-pwa')({
 module.exports = withPWA({
   reactStrictMode: true,
 });
-module.exports = {
-  eslint: {
-    ignoreDuringBuilds: true, // ✅ يمنع توقف Vercel بسبب تحذيرات ESLint
-  },
-};

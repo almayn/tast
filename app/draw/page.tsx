@@ -19,11 +19,9 @@ export default function Draw() {
   const updateQuestionsStatus = async () => {
     try {
       const currentTime = new Date().toISOString();
-void currentTime; // ✅ هذا يمنع تحذير ESLint لكنه لا يؤثر على عمل الكود
-console.log("⏰ التوقيت الحالي UTC:", currentTime);
-
-
-
+      void currentTime; // ✅ يجعل ESLint يتجاهله دون مشاكل
+      console.log("⏰ التوقيت الحالي UTC:", currentTime);
+      
   
       const { data: questions, error } = await supabase
         .from('questions')
