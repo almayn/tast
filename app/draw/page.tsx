@@ -300,7 +300,6 @@ export default function Draw() {
           <p className="text-lg text-gray-800 font-bold mt-2">
             {showCongrats ? `🎉 ألف مبروك! ${winnerName}` : 'مسابقة الماس'}
           </p>
-
           <button
             className={`w-full py-2 text-lg font-semibold rounded transition ${
               loading ? 'bg-orange-400 cursor-not-allowed animate-pulse' : 'bg-blue-500 text-white hover:bg-blue-600'
