@@ -20,48 +20,48 @@ export default function Draw() {
     try {
       const currentTime = new Date().toISOString();
       console.log("⏰ التوقيت الحالي UTC:", currentTime);
-  
+
       const { data: questions, error } = await supabase
         .from('questions')
         .select('id, close_date, status')
         .eq('status', 'waiting');
-  
+
       if (error) {
         console.error('❌ خطأ أثناء جلب الأسئلة:', error);
         return;
       }
-  
+
       questions.forEach(q => {
         console.log(`📌 [تحليل قبل التحديث] سؤال ${q.id}: close_date=${q.close_date}, مقارنة بـ currentTime=${currentTime}`);
       });
-  
+
       const questionsToUpdate = questions.filter(q => new Date(q.close_date) <= new Date(currentTime));
-  
+
       if (questionsToUpdate.length === 0) {
         console.log('⚠️ لا توجد أسئلة تحتاج إلى التحديث.');
         return;
       }
-  
+
       console.log('✅ سيتم تحديث الأسئلة التالية:', questionsToUpdate);
-  
+
       const { error: updateError } = await supabase
         .from('questions')
         .update({ status: 'open' })
         .in('id', questionsToUpdate.map(q => q.id));
-  
+
       if (updateError) {
         console.error('❌ خطأ أثناء تحديث حالة الأسئلة:', updateError);
         return;
       }
-  
+
       console.log('✅ تم تحديث الأسئلة بنجاح.');
-  
+
       // ✅ **بعد التحديث، تحقق مما إذا كان التحديث قد حدث فعليًا**
       const { data: updatedQuestions, error: fetchUpdatedError } = await supabase
         .from('questions')
         .select('id, status, close_date')
         .in('id', questionsToUpdate.map(q => q.id));
-  
+
       if (fetchUpdatedError) {
         console.error('❌ خطأ عند التحقق من التحديث:', fetchUpdatedError);
       } else {
@@ -71,8 +71,7 @@ export default function Draw() {
       console.error('❌ خطأ أثناء تحديث الأسئلة:', err);
     }
   };
-  
-  
+
   // ✅ جلب أحدث سؤال عند تحميل الصفحة
   useEffect(() => {
     const fetchLatestQuestion = async () => {
@@ -82,22 +81,23 @@ export default function Draw() {
 
         // جلب توقيت الخادم
         const { data: serverTimeData, error: rpcError } = await supabase.rpc('get_current_timestamp');
+        const currentTime = rpcError ? new Date().toISOString() : serverTimeData;
+
         if (rpcError) {
           console.error('❌ خطأ أثناء جلب توقيت الخادم:', rpcError.message);
-          return;
+          console.log("⏰ استخدام توقيت العميل:", currentTime);
+        } else {
+          console.log("⏰ توقيت الخادم:", currentTime);
         }
-
-        const currentTime = serverTimeData || new Date().toISOString();
 
         // جلب أحدث سؤال بناءً على توقيت الخادم
         const { data: latestQuestion, error: questionError } = await supabase
-        .from('questions')
-        .select('id, close_date, status')
-        .eq('status', 'open') // ✅ البحث فقط عن الأسئلة المفتوحة
-        .order('close_date', { ascending: false }) 
-        .limit(1)
-        .single();
-      
+          .from('questions')
+          .select('id, close_date, status')
+          .eq('status', 'open') // ✅ البحث فقط عن الأسئلة المفتوحة
+          .order('close_date', { ascending: false })
+          .limit(1)
+          .single();
 
         if (questionError || !latestQuestion) {
           alert('❌ لم يتم العثور على سؤال متاح للسحب.');
@@ -170,43 +170,43 @@ export default function Draw() {
         alert('❌ لم يتم العثور على السؤال الحالي.');
         return;
       }
-  
+
       // ✅ جلب جميع الفائزين السابقين لهذا السؤال
       const { data: winners, error: winnersError } = await supabase
         .from('winners')
         .select('subscription_number')
         .eq('question_id', questionId);
-  
+
       if (winnersError) throw winnersError;
-  
+
       const winningNumbers = winners.map((item) => item.subscription_number);
-  
+
       // ✅ جلب جميع المشاركين غير الفائزين
       let query = supabase
         .from('participants')
         .select('subscription_number, name, city') // ✅ إضافة `city`
         .eq('question_id', questionId);
-  
+
       if (winningNumbers.length > 0) {
         query = query.not('subscription_number', 'in', `(${winningNumbers.join(',')})`);
       }
-  
+
       const { data: participants, error: participantsError } = await query;
-  
+
       if (participantsError) throw participantsError;
-  
+
       console.log("📌 المشاركون غير الفائزين لهذا السؤال:", participants);
-  
+
       if (!participants || participants.length === 0) {
         alert('⚠️ لا يوجد مشاركون جدد لهذا السؤال.');
         setLoading(false);
         return;
       }
-  
+
       // ✅ اختيار فائز عشوائي
       const randomIndex = Math.floor(Math.random() * participants.length);
       const winningData = participants[randomIndex];
-  
+
       // ✅ تسجيل الفائز في قاعدة البيانات مع الاسم والمدينة
       const { error: insertError } = await supabase.from('winners').insert([
         {
@@ -216,25 +216,25 @@ export default function Draw() {
           city: winningData.city,  // ✅ تخزين المدينة
         },
       ]);
-  
+
       if (insertError) {
         console.error('❌ خطأ أثناء تسجيل الفائز:', JSON.stringify(insertError, null, 2));
         throw new Error(`❌ حدث خطأ أثناء تسجيل الفائز: ${insertError.message || 'خطأ غير معروف'}`);
       }
-      
+
       // ✅ تحديث حالة السؤال إلى "closed" بعد نجاح السحب
       const { error: updateError } = await supabase
         .from('questions')
         .update({ status: 'closed' }) // تحويل الحالة إلى "closed"
         .eq('id', questionId);
-  
+
       if (updateError) {
         console.error('❌ خطأ أثناء تحديث حالة السؤال:', updateError);
         alert('⚠️ حدث خطأ أثناء تحديث حالة السؤال.');
       } else {
         console.log(`✅ تم إغلاق السؤال رقم ${questionId} بنجاح.`);
       }
-  
+
       setWinner(winningData.subscription_number);
       setWinnerName(`${winningData.name} من ${winningData.city}`); // ✅ عرض الاسم والمدينة مع النتيجة
       playCheer();
@@ -248,7 +248,6 @@ export default function Draw() {
       setLoading(false);
     }
   };
-  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
