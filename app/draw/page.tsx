@@ -174,35 +174,36 @@ export default function Draw() {
 
       // ✅ جلب جميع الفائزين السابقين لهذا السؤال
       const { data: winners, error: winnersError } = await supabase
-        .from('winners')
-        .select('subscription_number')
-        .eq('question_id', questionId);
+  .from('winners')
+  .select('subscription_number')
+  .eq('question_id', questionId);
 
-      if (winnersError) throw winnersError;
+if (winnersError) throw winnersError;
 
-      const winningNumbers = winners.map((item) => item.subscription_number);
+const winningNumbers = winners.map((item) => item.subscription_number);
 
-      // ✅ جلب جميع المشاركين غير الفائزين
-      let query = supabase
-        .from('participants')
-        .select('subscription_number, name, city') // ✅ إضافة `city`
-        .eq('question_id', questionId);
+// ✅ جلب جميع المشاركين المؤهلين وغير الفائزين
+let query = supabase
+  .from('participants')
+  .select('subscription_number, name, city') // ✅ إضافة `city`
+  .eq('question_id', questionId)
+  .eq('is_eligible', true); // ⚠️ إضافة هذا الشرط الجديد
 
-      if (winningNumbers.length > 0) {
-        query = query.not('subscription_number', 'in', `(${winningNumbers.join(',')})`);
-      }
+if (winningNumbers.length > 0) {
+  query = query.not('subscription_number', 'in', `(${winningNumbers.join(',')})`);
+}
 
-      const { data: participants, error: participantsError } = await query;
+const { data: participants, error: participantsError } = await query;
 
-      if (participantsError) throw participantsError;
+if (participantsError) throw participantsError;
 
-      console.log("📌 المشاركون غير الفائزين لهذا السؤال:", participants);
+console.log("📌 المشاركون المؤهلون وغير الفائزين لهذا السؤال:", participants);
 
-      if (!participants || participants.length === 0) {
-        alert('⚠️ لا يوجد مشاركون جدد لهذا السؤال.');
-        setLoading(false);
-        return;
-      }
+if (!participants || participants.length === 0) {
+  alert('⚠️ لا يوجد مشاركون مؤهلون لهذا السؤال.');
+  setLoading(false);
+  return;
+}
 
       // ✅ اختيار فائز عشوائي
       const randomIndex = Math.floor(Math.random() * participants.length);
