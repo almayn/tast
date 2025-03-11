@@ -123,7 +123,7 @@ export default function Draw() {
   };
 
   const playCheer = () => {
-    const audio = new Audio('/sounds/cheer.mp3');
+    const audio = new Audio('/sounds/cheer.wav');
     audio.volume = 0.7;
     audio.play();
   };
