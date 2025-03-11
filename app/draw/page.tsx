@@ -123,7 +123,7 @@ export default function Draw() {
   };
 
   const playCheer = () => {
-    const audio = new Audio('/sounds/cheer.wav');
+    const audio = new Audio('/sounds/cheer.mp3');
     audio.volume = 0.7;
     audio.play();
   };
@@ -134,7 +134,6 @@ export default function Draw() {
       alert('❌ لم يتم العثور على السؤال الحالي.');
       return;
     }
-
     setLoading(true);
     setStarted(true);
     setProgress(0);
@@ -143,17 +142,17 @@ export default function Draw() {
     setWinnerName('');
     setShowCongrats(false);
     playTimerWarning();
-
     try {
       let timer = 6;
       const interval = setInterval(() => {
         setProgress((prev) => prev + (1 / (6 * 100)));
         setCountdown((prev) => prev - 0.01);
-
         if (timer <= 0) {
           clearInterval(interval);
           setProgress(100);
           setCountdown(0);
+          // تشغيل الصوت هنا مباشرة بعد انتهاء العد التنازلي
+          playCheer();
           chooseWinner();
         }
         timer -= 0.01;
